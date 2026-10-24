@@ -65,10 +65,28 @@ async def get_current_user(request: Request):
             token = auth_header[7:]
 
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required. Please sign in."
-        )
+        # Transparent guest student session — zero login wall
+        from app.database.mongodb import get_database
+        from datetime import datetime
+        db = get_database()
+        guest = await db.users.find_one({"email": "student@studyblueprint.in"})
+        if not guest:
+            new_guest = {
+                "google_sub": "guest_student_default",
+                "email": "student@studyblueprint.in",
+                "display_name": "Student",
+                "avatar_url": None,
+                "role": "student",
+                "account_status": "active",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "last_login_at": datetime.utcnow()
+            }
+            res = await db.users.insert_one(new_guest)
+            new_guest["_id"] = res.inserted_id
+            guest = new_guest
+        guest["id"] = str(guest["_id"])
+        return guest
     
     payload = decode_session_token(token)
     user_id = payload.get("sub")

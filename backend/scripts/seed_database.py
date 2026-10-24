@@ -16,7 +16,8 @@ async def seed_data(target_db=None):
     if target_db is not None:
         db = target_db
     else:
-        from app.database.mongodb import get_database
+        from app.database.mongodb import connect_to_mongo, get_database
+        await connect_to_mongo()
         db = get_database()
 
     # 1. Education Levels
@@ -64,6 +65,7 @@ async def seed_data(target_db=None):
         {"code": "civil", "name": "Civil Engineering", "short_name": "CIVIL", "education_level_code": "btech", "description": "Structural engineering, surveying, hydrology, construction"},
         {"code": "cme", "name": "Diploma in Computer Engineering", "short_name": "CME", "education_level_code": "diploma", "description": "Polytechnic computer engineering curriculum"},
         {"code": "mpc", "name": "Mathematics, Physics, Chemistry", "short_name": "MPC", "education_level_code": "intermediate", "description": "Standard engineering entrance preparatory stream"},
+        {"code": "class_9", "name": "Class 9 Secondary School", "short_name": "Class 9", "education_level_code": "school", "description": "Secondary school foundation year across CBSE, ICSE, and State Boards"},
         {"code": "class_10", "name": "Secondary Class 10", "short_name": "Class 10", "education_level_code": "school", "description": "Board examination class"}
     ]
     for br in branches:
@@ -238,6 +240,66 @@ async def seed_data(target_db=None):
             "description": "Real Numbers, Polynomials, Quadratic Equations, Trigonometry, and Statistics.",
             "icon_name": "Calculator",
             "is_active": True
+        },
+        {
+            "code": "CBSE-M09",
+            "name": "Class 9 Mathematics",
+            "short_name": "Class 9 Maths",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "NCERT",
+            "credits": 4,
+            "description": "Number Systems, Polynomials, Coordinate Geometry, Linear Equations in Two Variables, Triangles, Quadrilaterals, Circles, Heron's Formula, Surface Areas & Volumes, and Statistics.",
+            "icon_name": "Calculator",
+            "is_active": True
+        },
+        {
+            "code": "CBSE-SCI09",
+            "name": "Class 9 Science",
+            "short_name": "Class 9 Science",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "NCERT",
+            "credits": 4,
+            "description": "Matter in Our Surroundings, Atoms & Molecules, Structure of the Atom, Cell - The Fundamental Unit of Life, Tissues, Motion, Force and Laws of Motion, Gravitation, Work & Energy, and Sound.",
+            "icon_name": "Atom",
+            "is_active": True
+        },
+        {
+            "code": "CBSE-SST09",
+            "name": "Class 9 Social Science",
+            "short_name": "Class 9 Social",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "NCERT",
+            "credits": 4,
+            "description": "History (India and the Contemporary World-I), Geography (Contemporary India-I), Political Science (Democratic Politics-I), and Economics (People as Resource, Poverty as Challenge).",
+            "icon_name": "Globe",
+            "is_active": True
+        },
+        {
+            "code": "CBSE-ENG09",
+            "name": "Class 9 English Language & Literature",
+            "short_name": "Class 9 English",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "NCERT",
+            "credits": 3,
+            "description": "NCERT Beehive (Prose & Poetry), Moments Supplementary Reader, Reading Comprehension, Integrated Grammar, and Creative Writing Skills.",
+            "icon_name": "BookOpen",
+            "is_active": True
         }
     ]
 
@@ -361,6 +423,132 @@ async def seed_data(target_db=None):
             "verification_status": "verified",
             "publication_status": "published",
             "download_count": 215,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Mathematics Complete NCERT Syllabus Blueprint & Chapter Weightage",
+            "resource_type": "syllabus",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-M09", "cbse_m09"),
+            "file_url": "https://ncert.nic.in/syllabus.php",
+            "file_size_bytes": 1150000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "CBSE Academic Board",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 482,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Science (Physics & Chemistry) Formula Sheet & Concept Notes",
+            "resource_type": "formula_sheet",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-SCI09", "cbse_sci09"),
+            "file_url": "https://ncert.nic.in/science-notes.pdf",
+            "file_size_bytes": 940000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "Science Faculty Cell",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 390,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Annual Examination Model Question Paper with Stepwise Solutions",
+            "resource_type": "model_paper",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-M09", "cbse_m09"),
+            "file_url": "https://cbse.gov.in/sample-papers/class9.pdf",
+            "file_size_bytes": 1420000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "National Examination Board",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 520,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Science (Physics, Chemistry & Biology) Complete NCERT Syllabus Blueprint",
+            "resource_type": "syllabus",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-SCI09", "cbse_sci09"),
+            "file_url": "https://ncert.nic.in/science-syllabus.pdf",
+            "file_size_bytes": 1080000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "CBSE Curriculum Cell",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 465,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Social Science Complete NCERT Blueprint & Question Pattern",
+            "resource_type": "syllabus",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-SST09", "cbse_sst09"),
+            "file_url": "https://ncert.nic.in/sst-blueprint.pdf",
+            "file_size_bytes": 980000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "NCERT Social Studies Wing",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 310,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Science Annual Examination Model Paper with Scoring Key",
+            "resource_type": "model_paper",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-SCI09", "cbse_sci09"),
+            "file_url": "https://cbse.gov.in/sample-papers/class9-science.pdf",
+            "file_size_bytes": 1280000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "State Education Board",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 490,
+            "created_at": datetime.utcnow()
+        },
+        {
+            "title": "Class 9 Mathematics Chapter-wise Formula Sheet & Algebraic Identities Handbook",
+            "resource_type": "formula_sheet",
+            "education_level_code": "school",
+            "board_or_university_code": "cbse",
+            "branch_code": "class_9",
+            "semester": 1,
+            "regulation": "NCERT",
+            "subject_id": subject_ids.get("CBSE-M09", "cbse_m09"),
+            "file_url": "https://ncert.nic.in/math-formulas.pdf",
+            "file_size_bytes": 850000,
+            "file_mime_type": "application/pdf",
+            "source_contributor": "Math Academic Forum",
+            "verification_status": "verified",
+            "publication_status": "published",
+            "download_count": 610,
             "created_at": datetime.utcnow()
         }
     ]
@@ -543,6 +731,35 @@ async def seed_data(target_db=None):
             "certifications": ["AWS Certified Cloud Practitioner", "Meta Full-Stack Professional Certificate"],
             "eligibility_notes": "BTech CSE, AIML, IT or Diploma CME with strong coding proficiency.",
             "industry_insights": "High nationwide demand across Bengaluru, Hyderabad, and Pune. Strong emphasis on system design and problem-solving.",
+            "is_active": True
+        },
+        {
+            "role_code": "class9_foundation",
+            "title": "Class 9 & 10 Secondary School → Future Career Bridge",
+            "branch_codes": ["class_9", "class_10", "school"],
+            "summary": "Mastering 9th & 10th NCERT mathematics, science, logical reasoning, and choosing the optimal stream (+2 MPC for Engineering vs BiPC for Medicine vs Polytechnic).",
+            "core_skills": ["Algebra & Euclidean Geometry", "Physics (Motion, Laws of Motion, Work)", "Chemistry Fundamentals (Atoms, Molecules)", "Logical Reasoning & NTSE Preparation", "Elementary Coding (Python / Scratch)"],
+            "programming_languages": ["Python (Beginner)", "Scratch"],
+            "frameworks_and_tools": ["Jupyter Notebooks", "Desmos Graphing", "GeoGebra"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Class 9 Conceptual Foundations (Term 1)", "topics": ["Number Systems & Polynomials", "Motion, Force & Laws of Motion", "Cells & Tissues", "Basic Python Syntax"], "recommended_duration_weeks": 16},
+                {"phase": 2, "title": "Advanced Problem Solving & Olympiads (Term 2)", "topics": ["Linear Equations & Coordinate Geometry", "Work, Energy & Gravitation", "Atoms & Structure of Atom", "Logical Reasoning"], "recommended_duration_weeks": 16},
+                {"phase": 3, "title": "Stream Decision Bridge & Board Prep", "topics": ["Comprehensive Class 9 Syllabus Revision", "Stream Bridge: MPC vs BiPC decision guide", "Annual Sample Examination Papers"], "recommended_duration_weeks": 16}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "Interactive Geometry & Formula Calculator", "description": "Python or web script calculating surface area, volumes, and quadratic roots.", "suggested_tech_stack": ["Python", "Math Library"]},
+                {"tier": "intermediate", "title": "Physics Laws of Motion Simulator", "description": "Visual demonstration of projectile motion and velocity-time graphs.", "suggested_tech_stack": ["Python", "Matplotlib"]},
+                {"tier": "advanced_capstone", "title": "NTSE / Olympiad Quiz & Revision Application", "description": "Interactive multiple choice test engine with timer and answer explanations.", "suggested_tech_stack": ["HTML", "CSS", "JavaScript"]}
+            ],
+            "internship_preparation_checklist": [
+                "Master 100% of NCERT Class 9 Mathematics & Science textbook exercises",
+                "Solve past 5 years Olympiad (NSO/IMO) and NTSE Stage 1 question papers",
+                "Build at least one beginner coding program in Python",
+                "Decide stream preference (+2 Intermediate MPC, BiPC, or Polytechnic Diploma)"
+            ],
+            "certifications": ["Unified Council NSTSE Certificate", "Science Olympiad Foundation (SOF)"],
+            "eligibility_notes": "Students currently studying in Class 8, 9, or 10.",
+            "industry_insights": "Early mastery of mathematical logic and scientific method in Class 9 is the single biggest predictor of top ranks in JEE, NEET, and tech careers.",
             "is_active": True
         },
         {

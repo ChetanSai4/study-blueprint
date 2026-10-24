@@ -246,9 +246,11 @@ export default function ProfilePage() {
                     <option value="eee">Electrical & Electronics Engineering (EEE)</option>
                     <option value="mech">Mechanical Engineering (MECH)</option>
                     <option value="civil">Civil Engineering (CIVIL)</option>
-                    <option value="it">Information Technology (IT)</option>
+                    <option value="class_9">Class 9 (Secondary School)</option>
+                    <option value="class_10">Class 10 (Secondary Board)</option>
+                    <option value="mpc">Intermediate MPC (Maths, Physics, Chem)</option>
+                    <option value="bipc">Intermediate BiPC (Biology, Physics, Chem)</option>
                     <option value="cme">Diploma Computer Engineering (CME)</option>
-                    <option value="mpc">Intermediate MPC</option>
                   </select>
                 </div>
 

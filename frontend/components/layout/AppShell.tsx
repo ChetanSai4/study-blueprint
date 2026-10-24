@@ -94,7 +94,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <div className="flex items-center space-x-6">
-            <Link href="/careers" className="flex items-center space-x-2.5 group">
+            <Link href="/" className="flex items-center space-x-2.5 group">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm group-hover:scale-105 transition-transform">
                 <Compass className="h-5 w-5 text-brand-400" />
               </div>
