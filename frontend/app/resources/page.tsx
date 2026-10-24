@@ -121,7 +121,11 @@ export default function ResourcesPage() {
     <AppShell>
       <div className="space-y-6">
         {/* Header */}
-        <div>
+        <div className="border-b border-slate-200 pb-5">
+          <div className="flex items-center space-x-2 text-brand-600 text-xs font-bold uppercase tracking-wider mb-1">
+            <BookOpen className="h-4 w-4" />
+            <span>Portal 3 of 3: Academic Resources</span>
+          </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Academic Resource Explorer</h1>
           <p className="text-xs text-slate-500 mt-1">
             Strict multi-tier filtered repository of verified university syllabi, model question papers, and study notes.

@@ -5,20 +5,15 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Compass,
-  LayoutDashboard,
-  BookOpen,
-  Calendar,
-  Clock,
-  TrendingUp,
-  Youtube,
-  CheckSquare,
   Milestone,
+  Calendar,
+  BookOpen,
   User,
-  ShieldAlert,
   LogOut,
   Menu,
   X,
-  Play
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { User as UserType } from '@/types';
@@ -31,9 +26,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-  const [collegeName, setCollegeName] = useState<string>('BTech Engineering');
+  const [collegeName, setCollegeName] = useState<string>('Sri Sivani College of Engineering');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadUser() {
@@ -49,17 +43,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           setCollegeName(profile.board_or_university_code.toUpperCase());
         }
       } catch (err) {
-        // Fallback demo user
         setCurrentUser({
-          id: 'demo-student',
+          id: 'student-default',
           email: 'student@studyblueprint.in',
-          display_name: 'BTech Student',
+          display_name: 'Chetan Sai',
           role: 'student',
           account_status: 'active',
           is_onboarded: true
         });
-      } finally {
-        setLoading(false);
       }
     }
     loadUser();
@@ -75,156 +66,165 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     router.push('/login');
   };
 
-  const navItems = [
-    { name: 'Career Roadmaps', href: '/careers', icon: Milestone, badge: '1' },
-    { name: 'Study Planner & Tracker', href: '/study-planner', icon: Calendar, badge: '2' },
-    { name: 'Academic Resources', href: '/resources', icon: BookOpen, badge: '3' },
-    { name: 'My Progress', href: '/progress', icon: TrendingUp },
-    { name: 'Profile & Settings', href: '/profile', icon: User },
+  const navPortals = [
+    {
+      name: '1. Career Roadmaps',
+      href: '/careers',
+      icon: Milestone,
+      active: pathname.startsWith('/careers')
+    },
+    {
+      name: '2. Study Planner & Tracker',
+      href: '/study-planner',
+      icon: Calendar,
+      active: pathname.startsWith('/study-planner') || pathname.startsWith('/study-tracker')
+    },
+    {
+      name: '3. Study Resources',
+      href: '/resources',
+      icon: BookOpen,
+      active: pathname.startsWith('/resources') || pathname.startsWith('/videos')
+    }
   ];
 
-  if (currentUser?.role === 'admin') {
-    navItems.push({ name: 'Admin Portal', href: '/admin', icon: ShieldAlert, badge: undefined });
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white min-h-screen sticky top-0 h-screen">
-        {/* Brand */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <Link href="/careers" className="flex items-center space-x-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-teal-500 text-white shadow-sm">
-              <Compass className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="text-base font-bold text-slate-900 tracking-tight">STUDY <span className="text-brand-600">BLUEPRINT</span></span>
-              <span className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Student OS</span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Profile Card */}
-        <div className="p-4 mx-3 my-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm">
-            {currentUser?.display_name ? currentUser.display_name.charAt(0) : 'S'}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-xs font-semibold text-slate-900 truncate">{currentUser?.display_name || 'BTech Student'}</p>
-            <p className="text-[10px] text-slate-500 truncate" title={collegeName}>{collegeName}</p>
-          </div>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-brand-50 text-brand-700 font-bold border-l-4 border-brand-600'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-brand-600' : 'text-slate-400'}`} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Footer actions */}
-        <div className="p-4 border-t border-slate-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="h-16 border-b border-slate-200 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
-              aria-label="Open Mobile Menu"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="text-xs text-slate-500 font-medium">
-              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/study-tracker"
-              className="flex items-center space-x-2 rounded-lg bg-brand-50 border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100 transition-colors"
-            >
-              <Play className="h-3 w-3 fill-brand-700" />
-              <span>Launch Study Timer</span>
+    <div className="min-h-screen bg-[#fafbfc] text-slate-900 flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
+      {/* Sleek Modern Top Navigation (Apple / Linear style) */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Brand Logo */}
+          <div className="flex items-center space-x-6">
+            <Link href="/careers" className="flex items-center space-x-2.5 group">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm group-hover:scale-105 transition-transform">
+                <Compass className="h-5 w-5 text-brand-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold tracking-tight text-slate-900 flex items-center space-x-1">
+                  <span>STUDY BLUEPRINT</span>
+                </span>
+                <span className="text-[10px] font-medium text-slate-400 tracking-wider uppercase">
+                  Student Operating System
+                </span>
+              </div>
             </Link>
-          </div>
-        </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-          {children}
-        </main>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-            <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
-              <span className="text-sm font-bold text-slate-900">STUDY BLUEPRINT</span>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-md text-slate-500">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
+            {/* Desktop Portal Tabs */}
+            <nav className="hidden md:flex items-center space-x-1 pl-4 border-l border-slate-200">
+              {navPortals.map((portal) => {
+                const Icon = portal.icon;
                 return (
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                      isActive ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                    key={portal.name}
+                    href={portal.href}
+                    className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      portal.active
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <Icon className={`h-3.5 w-3.5 ${portal.active ? 'text-brand-400' : 'text-slate-400'}`} />
+                    <span>{portal.name}</span>
                   </Link>
                 );
               })}
             </nav>
-            <div className="p-4 border-t border-slate-100">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center space-x-2 px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
+          </div>
+
+          {/* Right Header Actions */}
+          <div className="flex items-center space-x-3">
+            {/* Student Profile Pill */}
+            <Link
+              href="/profile"
+              className={`hidden sm:flex items-center space-x-2.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                pathname === '/profile'
+                  ? 'border-brand-500 bg-brand-50/60 text-brand-900 ring-2 ring-brand-500/20'
+                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+              }`}
+            >
+              <div className="h-6 w-6 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-[10px]">
+                {currentUser?.display_name ? currentUser.display_name.charAt(0) : 'S'}
+              </div>
+              <div className="text-left">
+                <div className="font-semibold leading-tight text-slate-900 truncate max-w-[140px]">
+                  {currentUser?.display_name || 'Chetan Sai'}
+                </div>
+                <div className="text-[10px] text-slate-400 truncate max-w-[140px]" title={collegeName}>
+                  {collegeName}
+                </div>
+              </div>
+            </Link>
+
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+
+            {/* Mobile menu hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+              aria-label="Toggle Navigation"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-b border-slate-200 bg-white px-4 py-3 space-y-2 animate-in slide-in-from-top-2">
+            {navPortals.map((portal) => {
+              const Icon = portal.icon;
+              return (
+                <Link
+                  key={portal.name}
+                  href={portal.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold ${
+                    portal.active
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{portal.name}</span>
+                </Link>
+              );
+            })}
+
+            <Link
+              href="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              <User className="h-4 w-4 text-slate-500" />
+              <span>Profile & Settings</span>
+            </Link>
+          </div>
+        )}
+      </header>
+
+      {/* Main Page Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
+
+      {/* Clean Minimalist Footer */}
+      <footer className="border-t border-slate-200/80 bg-white py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+          <p>© 2026 Study Blueprint. High-performance learning architecture for Indian engineering students.</p>
+          <div className="flex items-center space-x-4">
+            <Link href="/careers" className="hover:text-slate-600">Career Roadmaps</Link>
+            <Link href="/study-planner" className="hover:text-slate-600">Study Planner</Link>
+            <Link href="/resources" className="hover:text-slate-600">Resources</Link>
+            <Link href="/profile" className="hover:text-slate-600">Profile</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
