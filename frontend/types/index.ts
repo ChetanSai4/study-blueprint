@@ -248,8 +248,8 @@ export interface CareerRole {
   projects: ProjectRecommendation[];
   internship_preparation_checklist: string[];
   certifications: string[];
-  eligibility_notes: string;
-  industry_insights: string;
+  eligibility_notes?: string;
+  industry_insights?: string;
 }
 
 export interface Task {

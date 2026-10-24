@@ -1069,6 +1069,151 @@ async def seed_data(target_db=None):
             "eligibility_notes": "BTech in CSE, AI/ML, Data Science, or related analytical disciplines.",
             "industry_insights": "Growing demand for engineers capable of bridging experimental Python notebooks with fast, robust backend API deployment.",
             "is_active": True
+        },
+        {
+            "role_code": "ece_vlsi_embedded",
+            "title": "Electronics & Communication (ECE) — VLSI & Embedded Systems Engineer",
+            "branch_codes": ["ece", "dece"],
+            "summary": "Designs high-speed microchips, FPGA hardware architectures, microcontroller firmware, and wireless 5G communication systems.",
+            "core_skills": ["Verilog / VHDL RTL Design", "Digital Signal Processing (DSP)", "Embedded C / RTOS Firmware", "FPGA Architecture & Synthesis", "RF & Wireless Systems"],
+            "programming_languages": ["Embedded C", "C++", "Verilog / SystemVerilog", "Python", "MATLAB"],
+            "frameworks_and_tools": ["Xilinx Vivado", "Keil MicroVision", "Cadence Virtuoso", "MATLAB Simulink", "Multisim", "STM32CubeIDE"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Electronic Devices & Circuit Theory (Term 1)", "topics": ["Semiconductor Physics & Diodes", "BJT & MOSFET Amplifier Design", "Network Theorems & Signals", "Embedded C Basics"], "recommended_duration_weeks": 8},
+                {"phase": 2, "title": "Microcontrollers & Hardware Description (Term 2)", "topics": ["ARM Cortex-M Architecture", "Verilog HDL & RTL Synthesis", "UART, SPI, I2C Protocols", "FreeRTOS Task Scheduling"], "recommended_duration_weeks": 10},
+                {"phase": 3, "title": "VLSI Design & High-Frequency RF (Term 3)", "topics": ["CMOS Digital IC Layout", "FPGA SoC Implementation", "Wireless Transceiver Design", "GATE / PSU Exam Preparation"], "recommended_duration_weeks": 10}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "Smart Home IoT Sensor Node with ESP32", "description": "Low-power environmental telemetry node publishing temperature and humidity over MQTT to cloud dashboard.", "suggested_tech_stack": ["Embedded C", "ESP-IDF", "MQTT", "FreeRTOS"]},
+                {"tier": "intermediate", "title": "FPGA-Based RISC Processor Core", "description": "32-bit pipelined ALU and register file implemented in Verilog with simulation testbench.", "suggested_tech_stack": ["Verilog", "Xilinx Vivado", "ModelSim"]},
+                {"tier": "advanced_capstone", "title": "Autonomous Drone Flight Controller Firmware", "description": "Bare-metal flight stabilization system fusing IMU gyro/accel data via Kalman filter running on STM32.", "suggested_tech_stack": ["C", "STM32", "Kalman Filter", "FreeRTOS", "Altium Designer"]}
+            ],
+            "internship_preparation_checklist": [
+                "Strong grasp of CMOS logic gates, setup/hold times, and clock domain crossing",
+                "Hands-on portfolio soldering microcontrollers and interfacing SPI/I2C peripherals",
+                "Working FPGA bitstream demonstration verified on hardware boards",
+                "GATE ECE prep: Signals & Systems, Electronic Devices, Digital Circuits, EMFT"
+            ],
+            "certifications": ["Arm Accredited Engineer", "Cadence Certified Associate - Digital IC Design"],
+            "eligibility_notes": "BTech in ECE, EEE, Instrumentation, or Diploma in Electronics (DECE).",
+            "industry_insights": "India Semiconductor Mission is driving massive hiring by Qualcomm, Intel, AMD, Texas Instruments, and ISRO.",
+            "is_active": True
+        },
+        {
+            "role_code": "eee_power_ev",
+            "title": "Electrical & Electronics (EEE) — Electric Vehicles (EV) & Smart Grid Engineer",
+            "branch_codes": ["eee", "deee"],
+            "summary": "Engineers electric vehicle drivetrains, battery management systems (BMS), high-voltage switchgear, and renewable smart power grids.",
+            "core_skills": ["Power Electronics & Inverters", "Battery Management Systems (BMS)", "Electric Motor Drives (BLDC & PMSM)", "PLC / SCADA Automation", "Power System Stability & Protection"],
+            "programming_languages": ["C", "MATLAB / Simulink", "Python", "Ladder Logic (PLC)"],
+            "frameworks_and_tools": ["MATLAB Simulink", "ETAP", "PSCAD", "Ansys Maxwell", "Proteus", "TIA Portal"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Electrical Machines & Circuit Analysis (Term 1)", "topics": ["AC/DC Machines & Transformers", "Electromagnetic Fields", "Circuit Analysis & Resonances", "MATLAB Circuit Modeling"], "recommended_duration_weeks": 8},
+                {"phase": 2, "title": "Power Electronics & Motor Controls (Term 2)", "topics": ["DC-DC Converters & PWM Inverters", "BLDC Motor Control Algorithms", "Battery Chemistry & State-of-Charge (SoC)", "PLC & Relay Coordination"], "recommended_duration_weeks": 10},
+                {"phase": 3, "title": "EV Drivetrains & Smart Grid Integration (Term 3)", "topics": ["Electric Vehicle Powertrain Simulation", "Grid-Tied Solar Inverters", "High-Voltage Protection", "GATE / PSU Exam Preparation"], "recommended_duration_weeks": 10}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "Solar Photovoltaic Maximum Power Point Tracker (MPPT)", "description": "Microcontroller-driven Buck-Boost converter implementing Perturb & Observe algorithm.", "suggested_tech_stack": ["C", "Arduino / PIC", "MATLAB Simulink", "Power MOSFETs"]},
+                {"tier": "intermediate", "title": "Li-Ion Battery Management System (BMS) with Cell Balancing", "description": "Active cell voltage monitoring, thermal runaway cutoff, and CAN-bus telemetry.", "suggested_tech_stack": ["Embedded C", "Simulink", "CAN Bus", "STM32"]},
+                {"tier": "advanced_capstone", "title": "Field-Oriented Control (FOC) for 3-Phase Electric Vehicle Traction Motor", "description": "Vector control inverter driving a PMSM motor with regenerative braking in EV test bench.", "suggested_tech_stack": ["MATLAB Simulink", "TI C2000 DSP", "IGBT Gate Drivers", "Altium"]}
+            ],
+            "internship_preparation_checklist": [
+                "Deep understanding of Thyristors, MOSFETs, IGBTs, and switching losses",
+                "Simulink models of DC-DC buck/boost converters and 3-phase inverters",
+                "Familiarity with High Voltage safety standards and isolation requirements",
+                "GATE EEE preparation: Electrical Machines, Power Systems, Power Electronics, Control Systems"
+            ],
+            "certifications": ["Siemens Certified PLC Programmer", "IEEE Certified EV Powertrain Specialist"],
+            "eligibility_notes": "BTech in EEE, EIE, Mechatronics, or Diploma in Electrical (DEEE).",
+            "industry_insights": "Electrification of mobility (Tata Motors, Ather, Ola, Tesla) and green grid transition has created surging demand for core electrical engineers.",
+            "is_active": True
+        },
+        {
+            "role_code": "mech_cad_robotics",
+            "title": "Mechanical Engineering (Mech) — CAD/CAM Design, Robotics & Thermal Systems",
+            "branch_codes": ["mech", "dme"],
+            "summary": "Develops mechanical assemblies, automotive chassis, robotic manipulators, HVAC systems, and aerodynamic simulation models.",
+            "core_skills": ["3D Parametric CAD Modeling", "Finite Element Analysis (FEA)", "Computational Fluid Dynamics (CFD)", "Thermodynamics & IC Engines", "Robotics Kinematics & CNC Machining"],
+            "programming_languages": ["Python", "MATLAB", "G-Code / M-Code", "C++ (ROS)"],
+            "frameworks_and_tools": ["SolidWorks", "AutoCAD", "ANSYS Workbench", "CATIA V5", "Fusion 360", "ROS (Robot Operating System)"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Engineering Mechanics & Strength of Materials (Term 1)", "topics": ["Statics & Dynamics", "Stress-Strain & Mohr Circle", "Engineering Drawing & Tolerancing (GD&T)", "Parametric CAD in SolidWorks"], "recommended_duration_weeks": 8},
+                {"phase": 2, "title": "Machine Design & Thermal Sciences (Term 2)", "topics": ["Design of Shafts, Gears, Bearings", "Thermodynamic Cycles & Heat Exchangers", "Fluid Flow & Navier-Stokes Basics", "FEA Structural Simulation in ANSYS"], "recommended_duration_weeks": 10},
+                {"phase": 3, "title": "Robotics, Automation & Advanced CFD (Term 3)", "topics": ["Industrial Robotic Arm Kinematics", "CFD Aerodynamic Drag Analysis", "Additive Manufacturing (3D Printing)", "GATE / PSU Exam Preparation (BHEL, IOCL, ONGC)"], "recommended_duration_weeks": 10}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "Parametric Gearbox Assembly & Stress Simulation", "description": "Multi-stage reduction gearbox designed in SolidWorks with von-Mises stress analysis.", "suggested_tech_stack": ["SolidWorks", "ANSYS Mechanical", "GD&T Standards"]},
+                {"tier": "intermediate", "title": "Automotive Disc Brake Thermal Dissipation Study", "description": "Coupled thermo-mechanical FEA analysis of slotted vs drilled ventilated brake rotors.", "suggested_tech_stack": ["ANSYS Transient Thermal", "CATIA", "MATLAB"]},
+                {"tier": "advanced_capstone", "title": "6-DOF Robotic Arm with ROS Motion Planning", "description": "Custom 3D-printed manipulator arm featuring inverse kinematics solver and pick-and-place automation.", "suggested_tech_stack": ["ROS 2", "Python", "Fusion 360", "Arduino / Stepper Drivers"]}
+            ],
+            "internship_preparation_checklist": [
+                "Proficiency in SolidWorks or CATIA with assembly modeling and production drafting",
+                "Hands-on understanding of manufacturing processes (lathe, milling, casting, 3D printing)",
+                "FEA mesh convergence and boundary condition justification in ANSYS",
+                "GATE Mechanical syllabus: Thermodynamics, Manufacturing, Theory of Machines, SOM"
+            ],
+            "certifications": ["Certified SOLIDWORKS Associate (CSWA)", "ANSYS Certified Associate - Structural FEA"],
+            "eligibility_notes": "BTech in Mechanical, Automobile, Aerospace, Production, or Diploma in Mechanical (DME).",
+            "industry_insights": "Aerospace, defense manufacturing, and robotics offer premium compensation alongside central PSU appointments in BHEL, ONGC, and ISRO.",
+            "is_active": True
+        },
+        {
+            "role_code": "civil_structural_bim",
+            "title": "Civil Engineering (Civil) — Structural Engineering, BIM & Smart Infrastructure",
+            "branch_codes": ["civil", "dce"],
+            "summary": "Plans, analyzes, and oversees construction of high-rise structures, bridges, transportation corridors, and sustainable urban infrastructure.",
+            "core_skills": ["Reinforced Concrete (RCC) Design", "Steel Structure Analysis", "Building Information Modeling (BIM)", "Total Station & Drone Surveying", "Geotechnical & Soil Mechanics", "Project Estimation & Scheduling"],
+            "programming_languages": ["Python (Civil Automation)", "MATLAB", "SQL"],
+            "frameworks_and_tools": ["AutoCAD Civil 3D", "STAAD Pro", "ETABS", "Revit Architecture & Structure", "Primavera P6", "ArcGIS"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Surveying & Structural Mechanics (Term 1)", "topics": ["Total Station & Leveling Surveying", "Shear Force & Bending Moment Diagrams", "Fluid Mechanics & Open Channel Flow", "2D Drafting in AutoCAD"], "recommended_duration_weeks": 8},
+                {"phase": 2, "title": "RCC & Steel Design with Software Modeling (Term 2)", "topics": ["IS 456 RCC Slab, Beam, Column Design", "IS 800 Steel Truss & Connection Design", "STAAD Pro & ETABS Structural Analysis", "Soil Bearing Capacity & Footings"], "recommended_duration_weeks": 10},
+                {"phase": 3, "title": "BIM Coordination & Project Management (Term 3)", "topics": ["3D BIM Modeling in Revit", "Construction Scheduling in Primavera P6", "Green Building & LEED Standards", "GATE / SSC JE / State AEE Exam Preparation"], "recommended_duration_weeks": 10}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "G+3 Residential Apartment Plan & 2D Working Drawings", "description": "Municipal building permit architectural and structural working drawings according to local bylaws.", "suggested_tech_stack": ["AutoCAD", "IS 456 Standards", "Excel Estimation"]},
+                {"tier": "intermediate", "title": "Earthquake-Resistant Multi-Storey Frame Analysis in ETABS", "description": "Response spectrum seismic analysis of a 10-storey commercial complex according to IS 1893.", "suggested_tech_stack": ["ETABS", "IS 1893 Seismic Code", "STAAD Pro"]},
+                {"tier": "advanced_capstone", "title": "Prestressed Concrete Girder Highway Flyover Design", "description": "Complete superstructure and pier substructure analysis with geotechnical pile foundation design.", "suggested_tech_stack": ["MIDAS Civil / STAAD Pro", "Revit BIM", "Primavera P6"]}
+            ],
+            "internship_preparation_checklist": [
+                "Ability to read and interpret complex architectural and structural reinforcement drawings",
+                "Hands-on experience with Total Station instrument and concrete slump / compressive testing",
+                "Certified modeling portfolio in ETABS or STAAD Pro demonstrating load combination compliance",
+                "Exam mastery for SSC JE, State Irrigation / R&B Assistant Executive Engineer (AEE), and GATE Civil"
+            ],
+            "certifications": ["Autodesk Revit Architecture / Structure Certified Professional", "Bentley STAAD Pro Certified Associate"],
+            "eligibility_notes": "BTech in Civil, Construction Technology, Environmental, or Diploma in Civil (DCE).",
+            "industry_insights": "India's massive national infrastructure push (Highways, Metros, Smart Cities, Ports) guarantees high ongoing demand in L&T, Afcons, Shapoorji, and government public works.",
+            "is_active": True
+        },
+        {
+            "role_code": "cybersecurity_cloud",
+            "title": "Cybersecurity & Cloud Infrastructure Engineer",
+            "branch_codes": ["cse", "aiml", "cme"],
+            "summary": "Protects digital systems against advanced threat actors, builds resilient AWS/Azure cloud architecture, and maintains 24/7 security operations.",
+            "core_skills": ["Network Defense & Firewalls", "Penetration Testing & Vulnerability Assessment", "Cloud Architecture (AWS / Azure)", "Linux Systems Administration", "Incident Response & SIEM"],
+            "programming_languages": ["Python", "Bash Shell Scripting", "Go", "SQL"],
+            "frameworks_and_tools": ["Wireshark", "Burp Suite", "Kali Linux", "Docker", "Terraform", "Splunk", "AWS CloudFormation"],
+            "learning_roadmap": [
+                {"phase": 1, "title": "Networking & Linux Internals (Term 1)", "topics": ["TCP/IP, DNS, Routing & Subnetting", "Linux CLI & System Administration", "Bash Scripting & Automation", "CompTIA Security+ Fundamentals"], "recommended_duration_weeks": 8},
+                {"phase": 2, "title": "Offensive & Defensive Security (Term 2)", "topics": ["OWASP Top 10 Web Vulnerabilities", "Network Sniffing with Wireshark", "Burp Suite Web App Penetration Testing", "Active Directory Attacks & Hardening"], "recommended_duration_weeks": 10},
+                {"phase": 3, "title": "Cloud Security & DevSecOps (Term 3)", "topics": ["AWS Well-Architected Security", "Terraform Infrastructure as Code", "Docker Container Hardening", "SIEM Log Analysis & Threat Hunting"], "recommended_duration_weeks": 10}
+            ],
+            "projects": [
+                {"tier": "beginner", "title": "Automated Port Scanner & Vulnerability Auditing Script", "description": "Python multithreaded network recon tool checking open ports and comparing banners against CVE databases.", "suggested_tech_stack": ["Python", "Socket Library", "Nmap Engine"]},
+                {"tier": "intermediate", "title": "Multi-Tier Web Application Security Assessment Lab", "description": "Deliberately vulnerable test application with documented exploit walk-throughs and remediation patches.", "suggested_tech_stack": ["Burp Suite", "OWASP ZAP", "Python", "Docker"]},
+                {"tier": "advanced_capstone", "title": "Automated Cloud SIEM & Threat Detection Pipeline", "description": "AWS CloudWatch and GuardDuty log ingestion into Wazuh / Splunk SIEM with automated incident alerts.", "suggested_tech_stack": ["AWS", "Terraform", "Wazuh / Splunk", "Python", "Docker"]}
+            ],
+            "internship_preparation_checklist": [
+                "Hands-on labs on TryHackMe or HackTheBox (Top 10% ranking)",
+                "Strong grasp of TLS handshakes, PKI certificates, and asymmetric cryptography",
+                "Clean GitHub repository with security auditing scripts and CTF writeups",
+                "Prepared for technical questions on SQLi, XSS, SSRF, and Buffer Overflows"
+            ],
+            "certifications": ["CompTIA Security+", "AWS Certified Solutions Architect - Associate", "Certified Ethical Hacker (CEH)"],
+            "eligibility_notes": "BTech in CSE, IT, AIML, ECE or Diploma CME with strong networking fundamentals.",
+            "industry_insights": "Every major bank, IT service provider, and defense contractor has dedicated SOC operations with zero-unemployment rates for qualified security engineers.",
+            "is_active": True
         }
     ]
     for cr in career_roles:

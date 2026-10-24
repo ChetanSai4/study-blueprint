@@ -46,9 +46,12 @@ import {
   Shield,
   Palette,
   Laptop,
-  Scale
+  Scale,
+  Zap
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { DEFAULT_CAREER_ROLES } from '@/lib/careerRoles';
+import { DIPLOMA_BRANCH_DETAILS } from '@/lib/diplomaData';
 
 import { CareerRole, EducationalResource, TimetableAllocation, StudyPlan } from '@/types';
 import { formatSeconds } from '@/lib/utils';
@@ -496,9 +499,12 @@ export default function UnifiedPlatformHome() {
   const [active10thFlowTab, setActive10thFlowTab] = useState<'puc' | 'diploma' | 'paramedical' | 'iti' | 'defense' | 'short_courses'>('puc');
   // Sub-tab for Intermediate streams
   const [activeInterStreamTab, setActiveInterStreamTab] = useState<'mpc' | 'bipc' | 'mec' | 'arts'>('mpc');
+  // Sub-tab for Diploma branches
+  const [activeDiplomaBranch, setActiveDiplomaBranch] = useState<'cme' | 'ece' | 'eee' | 'mech' | 'civil' | 'auto'>('cme');
   // Engineering Roles State (ONLY for B.Tech)
-  const [roles, setRoles] = useState<CareerRole[]>([]);
-  const [selectedRole, setSelectedRole] = useState<CareerRole | null>(null);
+  const [btechRoleBranchFilter, setBtechRoleBranchFilter] = useState<string>('all');
+  const [roles, setRoles] = useState<CareerRole[]>(DEFAULT_CAREER_ROLES);
+  const [selectedRole, setSelectedRole] = useState<CareerRole | null>(DEFAULT_CAREER_ROLES[0]);
 
   // --- SECTION 2: STUDY PLANNER & SELF-ANALYSIS DASHBOARD STATE ---
   const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_10_ALLOCATIONS);
@@ -1602,89 +1608,296 @@ export default function UnifiedPlatformHome() {
               </div>
             ) : currentStage === 'diploma' ? (
               /* ========================================================================= */
-              /* DIPLOMA / POLYTECHNIC: LATERAL ENTRY (ECET) & PSU CAREERS                 */
+              /* DIPLOMA / POLYTECHNIC: INTERACTIVE BRANCH SELECTION & ECET BLUEPRINT       */
               /* ========================================================================= */
-              <div className="bg-white rounded-3xl border border-teal-200 p-6 sm:p-8 shadow-sm space-y-5 animate-in fade-in">
-                <div className="border-b border-slate-100 pb-4">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
-                    Polytechnic Diploma Technical Roadmap
-                  </span>
-                  <h3 className="text-xl font-bold text-slate-900 mt-2">
-                    State ECET Lateral Entry into 2nd Year B.Tech & PSU Technical Careers
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Direct entry to 3rd semester engineering across CSE, ECE, EEE, Mechanical, and Civil branches.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                  <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/50 space-y-2">
-                    <strong className="text-teal-950 font-bold block">1. State ECET Lateral Entry</strong>
-                    <p className="text-teal-800 text-[11px]">Direct admission to 2nd year B.Tech in top engineering colleges without repeating basics.</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/50 space-y-2">
-                    <strong className="text-teal-950 font-bold block">2. PSUs (ISRO, DRDO, BHEL, ONGC)</strong>
-                    <p className="text-teal-800 text-[11px]">Technical Assistant / Junior Engineer appointments with central government scales.</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/50 space-y-2">
-                    <strong className="text-teal-950 font-bold block">3. SSC JE & RRB Junior Engineer</strong>
-                    <p className="text-teal-800 text-[11px]">Indian Railways and CPWD engineering departments recruited via national exams.</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* ================================================================= */
-              /* B.TECH & ENGINEERING SPECIFIC CAREER ROADMAP (Only when BTech is chosen) */
-              /* ================================================================= */
-              <div className="space-y-6">
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">1</span>
-                    <h2 className="text-sm font-bold text-slate-900">Choose Your Target Engineering Specialization</h2>
+              <div className="space-y-6 animate-in fade-in">
+                {/* Branch Selection Grid */}
+                <div className="bg-white rounded-3xl border border-teal-200/90 p-6 sm:p-8 shadow-sm space-y-6">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
+                      Polytechnic Diploma Branches
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900 mt-1">
+                      Choose Your Polytechnic Diploma Group / Branch:
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Click any diploma branch to inspect its State ECET lateral entry path, core subjects, PSU exams, and industrial placements.
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {roles.map(r => {
-                      const isSelected = selectedRole?.role_code === r.role_code;
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[
+                      { id: 'cme', label: '1. Computer (DCME)', sub: 'Software & IT', icon: Laptop, color: 'border-blue-300 bg-blue-50/70 text-blue-900' },
+                      { id: 'ece', label: '2. Electronics (DECE)', sub: 'Hardware & Telecom', icon: Cpu, color: 'border-indigo-300 bg-indigo-50/70 text-indigo-900' },
+                      { id: 'eee', label: '3. Electrical (DEEE)', sub: 'Power Machines & EV', icon: Zap, color: 'border-amber-300 bg-amber-50/70 text-amber-900' },
+                      { id: 'mech', label: '4. Mechanical (DME)', sub: 'Manufacturing & CAD', icon: Wrench, color: 'border-rose-300 bg-rose-50/70 text-rose-900' },
+                      { id: 'civil', label: '5. Civil (DCE)', sub: 'Construction & Survey', icon: Building2, color: 'border-emerald-300 bg-emerald-50/70 text-emerald-900' },
+                      { id: 'auto', label: '6. Automobile (DAE)', sub: 'Automotive & Engines', icon: Shield, color: 'border-teal-300 bg-teal-50/70 text-teal-900' }
+                    ].map(branch => {
+                      const Icon = branch.icon;
+                      const isSelected = activeDiplomaBranch === branch.id;
                       return (
                         <button
-                          key={r.id}
-                          onClick={() => setSelectedRole(r)}
-                          className={`p-4 rounded-xl border text-left transition-all ${
+                          key={branch.id}
+                          onClick={() => setActiveDiplomaBranch(branch.id as any)}
+                          className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
                             isSelected
-                              ? 'border-brand-600 bg-brand-50/70 shadow-sm ring-2 ring-brand-500/20'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                              ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
+                              : `${branch.color} hover:shadow-xs`
                           }`}
                         >
-                          <div className="flex items-center justify-between mb-1.5">
-                            <h3 className="text-xs font-bold text-slate-900">{r.title}</h3>
-                            {isSelected ? (
-                              <CheckCircle2 className="h-4 w-4 text-brand-600" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 text-slate-300" />
-                            )}
+                          <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-brand-400' : 'opacity-80'}`} />
+                          <div>
+                            <div className="text-xs font-bold leading-tight">{branch.label}</div>
+                            <div className={`text-[10px] mt-1 ${isSelected ? 'text-slate-300' : 'opacity-75'}`}>
+                              {branch.sub}
+                            </div>
                           </div>
-                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{r.summary}</p>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {selectedRole && (
-                  <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
-                    <div className="border-b border-slate-100 pb-5">
-                      <h2 className="text-xl font-bold text-slate-900">{selectedRole.title}</h2>
-                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{selectedRole.summary}</p>
+                {/* Selected Diploma Branch Deep-Dive */}
+                {DIPLOMA_BRANCH_DETAILS[activeDiplomaBranch] && (() => {
+                  const data = DIPLOMA_BRANCH_DETAILS[activeDiplomaBranch];
+                  return (
+                    <div className="space-y-6">
+                      {/* Gateway 1: State ECET Lateral Entry */}
+                      <div className="bg-white rounded-3xl border border-teal-200 p-6 sm:p-8 shadow-sm space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
+                              Gateway 1: State ECET Lateral Entry (B.Tech 2nd Year)
+                            </span>
+                            <h3 className="text-xl font-bold text-slate-900 mt-2">
+                              {data.name || data.label} → B.Tech Lateral Entry Blueprint
+                            </h3>
+                          </div>
+                          <span className="px-3 py-1 rounded-xl bg-teal-600 text-white font-bold text-xs shrink-0 self-start sm:self-auto">
+                            Direct 2nd Year B.Tech Entry
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
+                            <strong className="text-teal-950 block font-bold">Lateral Admission Target</strong>
+                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.lateral_seat}</p>
+                          </div>
+                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
+                            <strong className="text-teal-950 block font-bold">Top University Colleges</strong>
+                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.top_colleges}</p>
+                          </div>
+                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
+                            <strong className="text-teal-950 block font-bold">State ECET Rank Benchmark</strong>
+                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.rank_target}</p>
+                          </div>
+                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
+                            <strong className="text-teal-950 block font-bold">Strategic Advantage</strong>
+                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.advantage}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Gateway 2: Core Subjects & Labs */}
+                      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+                        <div className="border-b border-slate-100 pb-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                            Gateway 2: Core Technical Curriculum & Practical Labs
+                          </span>
+                          <h3 className="text-lg font-bold text-slate-900 mt-2">
+                            Key Subjects & Hands-on Workshop Modules
+                          </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                          {data.core_subjects.map(sub => (
+                            <div key={sub.name} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                              <strong className="text-slate-900 block font-bold">{sub.name}</strong>
+                              <p className="text-slate-600 text-[11px] leading-relaxed">{sub.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Gateway 3 & 4: PSU Govt Jobs + Industrial Recruiters */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* PSU Govt Jobs */}
+                        <div className="bg-white rounded-3xl border border-emerald-200 p-6 shadow-sm space-y-4">
+                          <div className="border-b border-slate-100 pb-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                              Gateway 3: Central & State Govt PSUs
+                            </span>
+                            <h3 className="text-base font-bold text-slate-900 mt-2">
+                              Government Junior Engineer & Technical Appointments
+                            </h3>
+                          </div>
+                          <div className="space-y-2.5 text-xs">
+                            {data.psu_govt_jobs.map(job => (
+                              <div key={job.org} className="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
+                                <div>
+                                  <strong className="text-emerald-950 block">{job.org}</strong>
+                                  <span className="text-slate-600 text-[11px]">{job.role}</span>
+                                </div>
+                                <span className="text-[11px] font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                                  {job.salary}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Private Recruiters */}
+                        <div className="bg-white rounded-3xl border border-blue-200 p-6 shadow-sm space-y-4">
+                          <div className="border-b border-slate-100 pb-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                              Gateway 4: Private Industrial Campus Placements
+                            </span>
+                            <h3 className="text-base font-bold text-slate-900 mt-2">
+                              Major Recruiters & Apprenticeship Sponsors
+                            </h3>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs pt-1">
+                            {data.industry_recruiters.map(company => (
+                              <span key={company} className="px-3 py-2 rounded-xl border border-blue-200 bg-blue-50/50 text-blue-950 font-bold text-[11px]">
+                                {company}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-2">
+                            Annual campus placements offer trainee engineer positions with fast-track promotion upon completing B.Tech via distance or evening colleges.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Gateway 5: 3-Year Action Plan */}
+                      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+                        <div className="border-b border-slate-100 pb-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                            Gateway 5: 3-Year Strategic Milestone Plan
+                          </span>
+                          <h3 className="text-lg font-bold text-slate-900 mt-2">
+                            From 1st Year Fundamentals to 3rd Year ECET Rank & Industry Placement
+                          </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          {data.three_year_plan.map(step => (
+                            <div key={step.year} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                              <strong className="text-brand-700 font-bold block">{step.year}</strong>
+                              <p className="text-slate-600 text-[11px] leading-relaxed">{step.focus}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              /* ================================================================= */
+              /* B.TECH & ENGINEERING SPECIFIC CAREER ROADMAP (Only when BTech is chosen) */
+              /* ================================================================= */
+              <div className="space-y-6">
+                <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+                        Engineering Branches & Groups
+                      </span>
+                      <h2 className="text-xl font-bold text-slate-900 mt-2">
+                        Select Your Engineering Branch / Specialization:
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Choose CSE, AI/ML, ECE, EEE, Mechanical, Civil, or Cybersecurity to view your complete 4-year tech stack, syllabus milestones, and placements.
+                      </p>
                     </div>
 
+                    {/* Branch Quick Filters */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { id: 'all', label: 'All Branches' },
+                        { id: 'cse', label: 'CSE' },
+                        { id: 'aiml', label: 'AI/ML' },
+                        { id: 'ece', label: 'ECE' },
+                        { id: 'eee', label: 'EEE' },
+                        { id: 'mech', label: 'Mechanical' },
+                        { id: 'civil', label: 'Civil' }
+                      ].map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setBtechRoleBranchFilter(tab.id)}
+                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                            btechRoleBranchFilter === tab.id
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Role Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {roles
+                      .filter(r => btechRoleBranchFilter === 'all' || r.branch_codes.includes(btechRoleBranchFilter))
+                      .map(r => {
+                        const isSelected = selectedRole?.role_code === r.role_code;
+                        return (
+                          <button
+                            key={r.id}
+                            onClick={() => setSelectedRole(r)}
+                            className={`p-4 rounded-2xl border text-left transition-all ${
+                              isSelected
+                                ? 'border-brand-600 bg-brand-50/70 shadow-sm ring-2 ring-brand-500/20'
+                                : 'border-slate-200 hover:border-slate-300 bg-white'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 bg-brand-100/80 px-2 py-0.5 rounded-md">
+                                {r.branch_codes[0]?.toUpperCase()}
+                              </span>
+                              {isSelected ? (
+                                <CheckCircle2 className="h-4 w-4 text-brand-600 shrink-0" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+                              )}
+                            </div>
+                            <h3 className="text-xs font-bold text-slate-900 mb-1 leading-snug">{r.title}</h3>
+                            <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{r.summary}</p>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* Selected Role Detailed Blueprint */}
+                {selectedRole && (
+                  <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-7 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-5">
+                      <div className="flex items-center space-x-2 mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2.5 py-0.5 rounded-full">
+                          Selected Specialization
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          {selectedRole.branch_codes.map(b => b.toUpperCase()).join(' • ')}
+                        </span>
+                      </div>
+                      <h2 className="text-2xl font-extrabold text-slate-900">{selectedRole.title}</h2>
+                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-4xl">{selectedRole.summary}</p>
+                    </div>
+
+                    {/* Tech Stack & Core Competencies */}
                     <div className="space-y-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
                         <Code2 className="h-4 w-4 text-brand-600" />
                         <span>Core Competencies & Technology Stack</span>
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                           <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Programming Languages</h4>
                           <div className="flex flex-wrap gap-1.5">
                             {selectedRole.programming_languages.map(l => (
@@ -1694,7 +1907,7 @@ export default function UnifiedPlatformHome() {
                             ))}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                           <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Frameworks & Tools</h4>
                           <div className="flex flex-wrap gap-1.5">
                             {selectedRole.frameworks_and_tools.map(t => (
@@ -1704,7 +1917,7 @@ export default function UnifiedPlatformHome() {
                             ))}
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                           <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Core Concepts</h4>
                           <div className="flex flex-wrap gap-1.5">
                             {selectedRole.core_skills.map(s => (
@@ -1717,17 +1930,18 @@ export default function UnifiedPlatformHome() {
                       </div>
                     </div>
 
+                    {/* Semester-by-Semester Milestones */}
                     <div className="space-y-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
                         <Layers className="h-4 w-4 text-brand-600" />
-                        <span>Semester-by-Semester Milestones</span>
+                        <span>Semester-by-Semester Roadmap Milestones</span>
                       </h3>
                       <div className="space-y-3">
                         {selectedRole.learning_roadmap.map((phase, idx) => (
-                          <div key={phase.phase} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                          <div key={phase.phase} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center space-x-2">
-                                <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-900 text-white font-mono text-xs font-bold">
+                                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-slate-900 text-white font-mono text-xs font-bold">
                                   {idx + 1}
                                 </span>
                                 <h4 className="text-xs font-bold text-slate-900">{phase.title}</h4>
@@ -1738,7 +1952,7 @@ export default function UnifiedPlatformHome() {
                             </div>
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {phase.topics.map(t => (
-                                <span key={t} className="text-xs bg-white border border-slate-200/80 px-2 py-0.5 rounded text-slate-700">
+                                <span key={t} className="text-xs bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-lg text-slate-700">
                                   {t}
                                 </span>
                               ))}
@@ -1746,6 +1960,79 @@ export default function UnifiedPlatformHome() {
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Real-World Industry Projects */}
+                    {selectedRole.projects && selectedRole.projects.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
+                          <FolderGit2 className="h-4 w-4 text-brand-600" />
+                          <span>Recommended Engineering Projects (Portfolio Capstones)</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          {selectedRole.projects.map(proj => (
+                            <div key={proj.title} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-brand-100 text-brand-800">
+                                  {proj.tier.replace('_', ' ')}
+                                </span>
+                              </div>
+                              <h4 className="text-xs font-bold text-slate-900">{proj.title}</h4>
+                              <p className="text-slate-600 text-[11px] leading-relaxed">{proj.description}</p>
+                              {proj.suggested_tech_stack && (
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                  {proj.suggested_tech_stack.map(st => (
+                                    <span key={st} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-700">
+                                      {st}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Internship Checklist & Certifications */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedRole.internship_preparation_checklist && selectedRole.internship_preparation_checklist.length > 0 && (
+                        <div className="p-5 rounded-2xl border border-emerald-200 bg-emerald-50/30 space-y-3">
+                          <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider flex items-center space-x-1.5">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            <span>Campus Placement Preparation Checklist</span>
+                          </h4>
+                          <ul className="space-y-2 text-xs">
+                            {selectedRole.internship_preparation_checklist.map(item => (
+                              <li key={item} className="flex items-start space-x-2 text-slate-700 text-[11px]">
+                                <span className="text-emerald-600 font-bold mt-0.5">✓</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {selectedRole.certifications && selectedRole.certifications.length > 0 && (
+                        <div className="p-5 rounded-2xl border border-blue-200 bg-blue-50/30 space-y-3">
+                          <h4 className="text-xs font-bold text-blue-950 uppercase tracking-wider flex items-center space-x-1.5">
+                            <Award className="h-4 w-4 text-blue-600" />
+                            <span>Industry-Recognized Certifications</span>
+                          </h4>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {selectedRole.certifications.map(cert => (
+                              <span key={cert} className="px-3 py-1.5 rounded-xl border border-blue-200 bg-white text-blue-950 font-bold text-[11px] shadow-xs">
+                                {cert}
+                              </span>
+                            ))}
+                          </div>
+                          {selectedRole.eligibility_notes && (
+                            <p className="text-[11px] text-slate-500 mt-2">
+                              <strong>Eligibility:</strong> {selectedRole.eligibility_notes}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
