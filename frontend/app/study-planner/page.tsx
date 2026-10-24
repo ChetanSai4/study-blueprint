@@ -207,15 +207,13 @@ export default function StudyPlannerPage() {
               <span>Auto-Balance</span>
             </button>
 
-            {allocations.length > 0 && (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center space-x-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Delete Plan</span>
-              </button>
-            )}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center space-x-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete / Reset Plan</span>
+            </button>
 
             <button
               onClick={() => handleSave()}

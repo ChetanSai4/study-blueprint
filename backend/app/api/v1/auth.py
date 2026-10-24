@@ -117,8 +117,9 @@ async def demo_login(payload: DemoAuthRequest, response: Response):
     now = datetime.utcnow()
 
     if not user:
+        unique_sub = f"google_sub_{email.replace('@', '_').replace('.', '_')}"
         new_user = {
-            "google_sub": f"demo_sub_{role}",
+            "google_sub": unique_sub,
             "email": email,
             "display_name": name,
             "avatar_url": None,
@@ -132,7 +133,7 @@ async def demo_login(payload: DemoAuthRequest, response: Response):
         new_user["_id"] = res.inserted_id
         user = new_user
     else:
-        await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login_at": now}})
+        await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login_at": now, "display_name": name}})
 
     user_id = str(user["_id"])
     token = create_session_token(user_id=user_id, role=role)

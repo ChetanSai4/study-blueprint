@@ -146,10 +146,10 @@ export default function OnboardingPage() {
         preferred_language: formData.preferredLanguage,
         goals: formData.goals
       });
-      router.push('/dashboard');
+      router.push('/careers');
     } catch (err) {
       console.error('Onboarding save error', err);
-      router.push('/dashboard');
+      router.push('/careers');
     } finally {
       setLoading(false);
     }

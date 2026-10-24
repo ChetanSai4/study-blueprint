@@ -21,48 +21,10 @@ async def get_current_study_plan(current_user: dict = Depends(get_current_user))
     plan = await db.study_plans.find_one({"user_id": user_id, "is_active": True})
 
     if not plan:
-        # Generate default starter plan based on user's profile
-        profile = await db.student_profiles.find_one({"user_id": user_id})
-        daily_mins = int(profile.get("available_study_hours_daily", 4.0) * 60) if profile else 240
-        enrolled_ids = profile.get("enrolled_subject_ids", []) if profile else []
-
-        subjects = []
-        if enrolled_ids:
-            for s_id in enrolled_ids:
-                try:
-                    s = await db.subjects.find_one({"_id": ObjectId(s_id)})
-                except Exception:
-                    s = await db.subjects.find_one({"_id": s_id})
-                if s:
-                    subjects.append(s)
-        
-        if not subjects:
-            # Fallback to fetching any active subjects
-            cursor = db.subjects.find({"is_active": True}).limit(4)
-            subjects = await cursor.to_list(length=4)
-
-        allocations = generate_deterministic_timetable(
-            available_daily_minutes=daily_mins,
-            break_duration_minutes=profile.get("break_duration_minutes", 10) if profile else 10,
-            study_interval_minutes=profile.get("study_interval_minutes", 50) if profile else 50,
-            subjects=subjects,
-            subject_priorities=profile.get("subject_priorities", {}) if profile else {}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No active study plan found."
         )
-
-        new_plan = {
-            "user_id": user_id,
-            "title": "Semester Study Blueprint",
-            "daily_target_minutes": daily_mins,
-            "break_duration_minutes": 10,
-            "study_interval_minutes": 50,
-            "allocations": [a.dict() for a in allocations],
-            "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
-        }
-        res = await db.study_plans.insert_one(new_plan)
-        new_plan["_id"] = res.inserted_id
-        plan = new_plan
 
     return format_doc(plan)
 

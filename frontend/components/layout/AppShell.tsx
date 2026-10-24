@@ -76,19 +76,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Academic Resources', href: '/resources', icon: BookOpen },
-    { name: 'Study Planner', href: '/study-planner', icon: Calendar },
-    { name: 'Study Tracker', href: '/study-tracker', icon: Clock },
+    { name: 'Career Roadmaps', href: '/careers', icon: Milestone, badge: '1' },
+    { name: 'Study Planner & Tracker', href: '/study-planner', icon: Calendar, badge: '2' },
+    { name: 'Academic Resources', href: '/resources', icon: BookOpen, badge: '3' },
     { name: 'My Progress', href: '/progress', icon: TrendingUp },
-    { name: 'YouTube Learning', href: '/videos', icon: Youtube },
-    { name: 'Tasks & Revision', href: '/tasks', icon: CheckSquare },
-    { name: 'Career Roadmaps', href: '/careers', icon: Milestone },
     { name: 'Profile & Settings', href: '/profile', icon: User },
   ];
 
   if (currentUser?.role === 'admin') {
-    navItems.push({ name: 'Admin Portal', href: '/admin', icon: ShieldAlert });
+    navItems.push({ name: 'Admin Portal', href: '/admin', icon: ShieldAlert, badge: undefined });
   }
 
   return (
@@ -97,7 +93,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white min-h-screen sticky top-0 h-screen">
         {/* Brand */}
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <Link href="/dashboard" className="flex items-center space-x-2.5">
+          <Link href="/careers" className="flex items-center space-x-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-600 to-teal-500 text-white shadow-sm">
               <Compass className="h-5 w-5" />
             </div>
