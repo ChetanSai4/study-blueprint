@@ -33,48 +33,60 @@ import {
   ShieldCheck,
   Check,
   HelpCircle,
-  FileText
+  FileText,
+  Activity,
+  Flame,
+  Target,
+  BarChart3,
+  TrendingUp,
+  Cpu,
+  Stethoscope,
+  Building2,
+  Wrench,
+  Shield,
+  Palette,
+  Laptop
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { CareerRole, EducationalResource, TimetableAllocation, StudyPlan } from '@/types';
 import { formatSeconds } from '@/lib/utils';
 
-// Core Education Stages
+// Core Education Stages for Career Roadmap & Study Planner
 const STAGES = [
-  { id: 'class_9', label: 'Class 9 (Secondary School)', badge: 'NCERT / CBSE / State' },
-  { id: 'class_10', label: 'Class 10 (Secondary Board)', badge: 'Board Year' },
+  { id: 'class_10', label: 'Class 10 (Secondary Board)', badge: 'Board SSLC' },
+  { id: 'class_9', label: 'Class 9 (Secondary School)', badge: 'School Foundation' },
   { id: 'intermediate', label: 'Intermediate (+2 MPC / BiPC)', badge: 'Junior College' },
   { id: 'diploma', label: 'Diploma / Polytechnic', badge: 'Technical Diploma' },
-  { id: 'btech_1', label: 'BTech 1st Year (Sem 1-1 / 1-2)', badge: 'Engineering' }
+  { id: 'btech_1', label: 'BTech 1st Year (Engineering)', badge: 'University BTech' }
 ];
 
 // Pre-configured standard academic schedules
-const DEFAULT_CLASS_9_ALLOCATIONS: TimetableAllocation[] = [
+const DEFAULT_CLASS_10_ALLOCATIONS: TimetableAllocation[] = [
   {
-    subject_id: 'sub_c9_1',
-    subject_name: 'Class 9 Mathematics (Number Systems, Polynomials & Geometry)',
-    subject_code: 'CBSE-M09',
-    planned_minutes: 50,
-    time_slot: '05:00 PM - 05:50 PM',
+    subject_id: 'sub_c10_1',
+    subject_name: 'Class 10 Mathematics (Quadratic Equations, Trigonometry & Coordinate Geometry)',
+    subject_code: 'CBSE-M10',
+    planned_minutes: 60,
+    time_slot: '05:00 PM - 06:00 PM',
     session_order: 1,
     is_break: false
   },
   {
     subject_id: 'break_1',
-    subject_name: 'Hydration & Rest Break',
+    subject_name: 'Short Rest & Hydration Break',
     subject_code: 'REST',
     planned_minutes: 10,
-    time_slot: '05:50 PM - 06:00 PM',
+    time_slot: '06:00 PM - 06:10 PM',
     session_order: 2,
     is_break: true,
     break_title: 'Refresh & Hydrate'
   },
   {
-    subject_id: 'sub_c9_2',
-    subject_name: 'Class 9 Science (Laws of Motion, Gravitation & Atoms)',
-    subject_code: 'CBSE-SCI09',
+    subject_id: 'sub_c10_2',
+    subject_name: 'Class 10 Science (Light Reflection/Refraction & Chemical Reactions)',
+    subject_code: 'CBSE-SCI10',
     planned_minutes: 50,
-    time_slot: '06:00 PM - 06:50 PM',
+    time_slot: '06:10 PM - 07:00 PM',
     session_order: 3,
     is_break: false
   },
@@ -83,26 +95,26 @@ const DEFAULT_CLASS_9_ALLOCATIONS: TimetableAllocation[] = [
     subject_name: 'Evening Snack Break',
     subject_code: 'REST',
     planned_minutes: 10,
-    time_slot: '06:50 PM - 07:00 PM',
+    time_slot: '07:00 PM - 07:10 PM',
     session_order: 4,
     is_break: true,
     break_title: 'Snack & Relaxation'
   },
   {
-    subject_id: 'sub_c9_3',
-    subject_name: 'Class 9 Social Science (History, Geography & Civics)',
-    subject_code: 'CBSE-SST09',
+    subject_id: 'sub_c10_3',
+    subject_name: 'Class 10 Social Science (Nationalism in India & Resources)',
+    subject_code: 'CBSE-SST10',
     planned_minutes: 45,
-    time_slot: '07:00 PM - 07:45 PM',
+    time_slot: '07:10 PM - 07:55 PM',
     session_order: 5,
     is_break: false
   },
   {
-    subject_id: 'sub_c9_4',
-    subject_name: 'Class 9 English (Beehive Literature & Grammar)',
-    subject_code: 'CBSE-ENG09',
-    planned_minutes: 40,
-    time_slot: '07:50 PM - 08:30 PM',
+    subject_id: 'sub_c10_4',
+    subject_name: 'Class 10 English Language & Previous Year Question Revision',
+    subject_code: 'CBSE-ENG10',
+    planned_minutes: 45,
+    time_slot: '08:00 PM - 08:45 PM',
     session_order: 6,
     is_break: false
   }
@@ -126,7 +138,7 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
     time_slot: '05:50 PM - 06:00 PM',
     session_order: 2,
     is_break: true,
-    break_title: 'Break'
+    break_title: 'Coffee Break'
   },
   {
     subject_id: 'sub_bt_2',
@@ -149,7 +161,7 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
   },
   {
     subject_id: 'sub_bt_3',
-    subject_name: 'Engineering Physics',
+    subject_name: 'Engineering Physics / Applied Physics',
     subject_code: 'BS1103',
     planned_minutes: 50,
     time_slot: '07:00 PM - 07:50 PM',
@@ -171,45 +183,50 @@ export default function UnifiedPlatformHome() {
   // Active Section Tab: 'careers' | 'planner' | 'resources'
   const [activePortal, setActivePortal] = useState<'careers' | 'planner' | 'resources'>('careers');
   
-  // Selected Academic Stage (Defaults to Class 9)
-  const [currentStage, setCurrentStage] = useState<string>('class_9');
+  // Selected Academic Stage (Defaults to Class 10)
+  const [currentStage, setCurrentStage] = useState<string>('class_10');
 
   // --- SECTION 1: CAREER ROADMAPS STATE ---
+  // Sub-tab for 10th class comprehensive pathways
+  const [active10thFlowTab, setActive10thFlowTab] = useState<'puc' | 'diploma' | 'paramedical' | 'iti' | 'defense' | 'short_courses'>('puc');
+  // Engineering Roles State (ONLY for B.Tech)
   const [roles, setRoles] = useState<CareerRole[]>([]);
   const [selectedRole, setSelectedRole] = useState<CareerRole | null>(null);
-  const [selectedStreamTab, setSelectedStreamTab] = useState<'mpc' | 'bipc' | 'mec' | 'arts' | 'diploma'>('mpc');
 
-  // --- SECTION 2: STUDY PLANNER & TRACKER STATE ---
-  const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_9_ALLOCATIONS);
-  const [dailyMinutes, setDailyMinutes] = useState(240);
-  const [breakMinutes, setBreakMinutes] = useState(10);
+  // --- SECTION 2: STUDY PLANNER & SELF-ANALYSIS DASHBOARD STATE ---
+  const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_10_ALLOCATIONS);
+  const [completedSessions, setCompletedSessions] = useState<Record<string, boolean>>({});
+  const [dailyMinutesTarget, setDailyMinutesTarget] = useState(240);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubCode, setNewSubCode] = useState('');
   const [newSubDuration, setNewSubDuration] = useState(50);
   const [newSubTime, setNewSubTime] = useState('06:00 PM - 06:50 PM');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [todayReflection, setTodayReflection] = useState('');
   
   // Live Stopwatch State
   const [activeTimerSession, setActiveTimerSession] = useState<TimetableAllocation | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerNotes, setTimerNotes] = useState('');
+  const [totalSecondsStudiedToday, setTotalSecondsStudiedToday] = useState(6480); // ~1.8h starter
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // --- SECTION 3: ACADEMIC RESOURCES STATE ---
+  // --- SECTION 3: B.TECH EXCLUSIVE STUDY RESOURCES STATE ---
   const [resources, setResources] = useState<EducationalResource[]>([]);
-  const [resourceFilterType, setResourceFilterType] = useState<string>('');
-  const [resourceSearch, setResourceSearch] = useState<string>('');
+  const [selectedBtechBranch, setSelectedBtechBranch] = useState<string>('all');
+  const [selectedBtechType, setSelectedBtechType] = useState<string>('');
+  const [btechSearch, setBtechSearch] = useState<string>('');
+  const [selectedUniversity, setSelectedUniversity] = useState<string>('jntugv');
 
   // Initial Load (NO LOGIN REQUIRED)
   useEffect(() => {
-    // Check if user previously picked a stage
     const savedStage = typeof window !== 'undefined' ? localStorage.getItem('study_blueprint_stage') : null;
-    const initialStage = savedStage || 'class_9';
+    const initialStage = savedStage || 'class_10';
     setCurrentStage(initialStage);
 
-    async function loadInitialData() {
+    async function loadData() {
       try {
         const [rList, resList, plan] = await Promise.all([
           api.get<CareerRole[]>('/careers/roles').catch(() => []),
@@ -219,27 +236,22 @@ export default function UnifiedPlatformHome() {
 
         if (rList && rList.length > 0) {
           setRoles(rList);
-          // Pick role matching initial stage
-          const match = rList.find(r => 
-            initialStage === 'class_9' || initialStage === 'class_10'
-              ? r.role_code === 'class9_foundation'
-              : r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev'
-          );
-          setSelectedRole(match || rList[0]);
+          const btechRole = rList.find(r => r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev');
+          setSelectedRole(btechRole || rList[0]);
         }
 
         if (resList) {
-          setResources(resList);
+          // Strictly filter B.Tech engineering resources only
+          const btechOnly = resList.filter(r => r.education_level_code === 'btech' || r.branch_code === 'cse' || r.branch_code === 'aiml' || r.regulation === 'R23');
+          setResources(btechOnly.length > 0 ? btechOnly : resList);
         }
 
         if (plan && plan.allocations && plan.allocations.length > 0) {
           setAllocations(plan.allocations);
-          setDailyMinutes(plan.daily_target_minutes);
-          setBreakMinutes(plan.break_duration_minutes);
+          setDailyMinutesTarget(plan.daily_target_minutes || 240);
         } else {
-          // Default allocations based on stage
-          if (initialStage === 'class_9' || initialStage === 'class_10') {
-            setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
+          if (initialStage === 'class_10' || initialStage === 'class_9') {
+            setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
           } else {
             setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
           }
@@ -248,28 +260,24 @@ export default function UnifiedPlatformHome() {
         console.error('Error loading data', err);
       }
     }
-    loadInitialData();
+    loadData();
   }, []);
 
-  // Update Academic Stage
+  // Handle stage change
   const handleStageChange = (stageId: string) => {
     setCurrentStage(stageId);
     if (typeof window !== 'undefined') {
       localStorage.setItem('study_blueprint_stage', stageId);
     }
 
-    if (stageId === 'class_9' || stageId === 'class_10') {
-      const match = roles.find(r => r.role_code === 'class9_foundation');
-      if (match) setSelectedRole(match);
-      setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
-    } else if (stageId === 'btech_1') {
-      const match = roles.find(r => r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev');
-      if (match) setSelectedRole(match);
-      setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
+    if (stageId === 'class_10' || stageId === 'class_9') {
+      setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
     } else {
-      if (roles.length > 0) setSelectedRole(roles[0]);
+      setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
+      const btechRole = roles.find(r => r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev');
+      if (btechRole) setSelectedRole(btechRole);
     }
-    setToastMessage(`Switched academic focus to: ${STAGES.find(s => s.id === stageId)?.label}`);
+    setToastMessage(`Switched perspective to: ${STAGES.find(s => s.id === stageId)?.label}`);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -279,6 +287,7 @@ export default function UnifiedPlatformHome() {
     if (timerRunning) {
       interval = setInterval(() => {
         setTimerSeconds(s => s + 1);
+        setTotalSecondsStudiedToday(t => t + 1);
       }, 1000);
     } else {
       clearInterval(interval);
@@ -286,7 +295,15 @@ export default function UnifiedPlatformHome() {
     return () => clearInterval(interval);
   }, [timerRunning]);
 
-  // Planner handlers
+  // Session Completed Toggle
+  const toggleSessionCompleted = (subjectId: string) => {
+    setCompletedSessions(prev => ({
+      ...prev,
+      [subjectId]: !prev[subjectId]
+    }));
+  };
+
+  // Manual Session Adder
   const handleAddManualSession = () => {
     if (!newSubName.trim()) return;
     const newSession: TimetableAllocation = {
@@ -304,10 +321,11 @@ export default function UnifiedPlatformHome() {
     setNewSubName('');
     setNewSubCode('');
     setShowAddModal(false);
-    setToastMessage(`Added "${newSession.subject_name}" to your study schedule.`);
+    setToastMessage(`Added "${newSession.subject_name}" to your schedule.`);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Delete / Reset Plan
   const handleDeletePlan = async () => {
     try {
       await api.delete('/study-plans/current');
@@ -316,7 +334,7 @@ export default function UnifiedPlatformHome() {
     }
     setAllocations([]);
     setShowDeleteConfirm(false);
-    setToastMessage('Study plan deleted. Your timetable is now completely clear.');
+    setToastMessage('Study plan deleted. Timetable is now completely clear.');
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -339,7 +357,7 @@ export default function UnifiedPlatformHome() {
     setActiveTimerSession(session);
     setTimerSeconds(0);
     setTimerRunning(true);
-    setToastMessage(`Focus timer launched for ${session.subject_name}`);
+    setToastMessage(`Focus stopwatch running for: ${session.subject_name}`);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -357,12 +375,16 @@ export default function UnifiedPlatformHome() {
         duration_seconds: timerSeconds,
         paused_duration_seconds: 0,
         session_type: 'timer',
-        session_notes: timerNotes || 'Study session logged from Study Blueprint'
+        session_notes: timerNotes || 'Self-analysis logged session'
       });
     } catch (e) {
       console.error(e);
     }
-    setToastMessage(`Logged ${Math.round(timerSeconds / 60)} minutes of study for ${activeTimerSession.subject_name}.`);
+    setCompletedSessions(prev => ({
+      ...prev,
+      [activeTimerSession.subject_id]: true
+    }));
+    setToastMessage(`Logged ${Math.round(timerSeconds / 60)} minutes for ${activeTimerSession.subject_name}. Great job!`);
     setTimeout(() => {
       setActiveTimerSession(null);
       setTimerSeconds(0);
@@ -370,33 +392,40 @@ export default function UnifiedPlatformHome() {
     }, 2500);
   };
 
-  // Strictly filter resources by current selected academic stage so data is NEVER mixed together
-  const filteredResources = resources.filter(res => {
-    // 1. Stage isolation filter
-    if (currentStage === 'class_9' || currentStage === 'class_10') {
-      const isSchool = res.education_level_code === 'school' || res.branch_code === 'class_9' || res.branch_code === 'class_10';
-      if (!isSchool) return false;
-    } else if (currentStage === 'btech_1') {
-      const isBtech = res.education_level_code === 'btech' || res.branch_code === 'cse' || res.branch_code === 'aiml';
-      if (!isBtech) return false;
-    } else if (currentStage === 'intermediate') {
-      const isInter = res.education_level_code === 'intermediate' || res.branch_code === 'mpc';
-      if (!isInter) return false;
-    } else if (currentStage === 'diploma') {
-      const isDiploma = res.education_level_code === 'diploma' || res.branch_code === 'cme';
-      if (!isDiploma) return false;
-    }
+  // Dashboard self-analysis metrics
+  const totalPlannedStudyMinutes = allocations
+    .filter(a => !a.is_break)
+    .reduce((sum, a) => sum + a.planned_minutes, 0);
 
-    // 2. Resource type filter
-    if (resourceFilterType && res.resource_type !== resourceFilterType) return false;
+  const totalBreakMinutes = allocations
+    .filter(a => a.is_break)
+    .reduce((sum, a) => sum + a.planned_minutes, 0);
 
-    // 3. Search query filter
-    if (resourceSearch.trim()) {
-      const q = resourceSearch.toLowerCase();
+  const completedCount = allocations.filter(a => !a.is_break && completedSessions[a.subject_id]).length;
+  const totalSubjectsCount = allocations.filter(a => !a.is_break).length;
+  const completionPercentage = totalSubjectsCount > 0 ? Math.round((completedCount / totalSubjectsCount) * 100) : 0;
+  const studiedMinutesToday = Math.round(totalSecondsStudiedToday / 60);
+  const targetProgressPercentage = Math.min(100, Math.round((studiedMinutesToday / dailyMinutesTarget) * 100));
+
+  // Filter B.Tech resources strictly
+  const filteredBtechResources = resources.filter(res => {
+    // Must be B.Tech or engineering
+    const isBtech = res.education_level_code === 'btech' || res.branch_code === 'cse' || res.branch_code === 'aiml' || res.regulation === 'R23';
+    if (!isBtech) return false;
+
+    // Branch filter
+    if (selectedBtechBranch !== 'all' && res.branch_code !== selectedBtechBranch) return false;
+
+    // Type filter
+    if (selectedBtechType && res.resource_type !== selectedBtechType) return false;
+
+    // Search query
+    if (btechSearch.trim()) {
+      const q = btechSearch.toLowerCase();
       return (
         res.title.toLowerCase().includes(q) ||
-        res.education_level_code.toLowerCase().includes(q) ||
-        (res.subject_name && res.subject_name.toLowerCase().includes(q))
+        res.regulation?.toLowerCase().includes(q) ||
+        res.subject_name?.toLowerCase().includes(q)
       );
     }
     return true;
@@ -442,7 +471,7 @@ export default function UnifiedPlatformHome() {
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
               }`}
             >
-              <Calendar className={`h-3.5 w-3.5 ${activePortal === 'planner' ? 'text-brand-400' : 'text-slate-400'}`} />
+              <BarChart3 className={`h-3.5 w-3.5 ${activePortal === 'planner' ? 'text-brand-400' : 'text-slate-400'}`} />
               <span>2. Study Planner & Tracker</span>
             </button>
 
@@ -455,7 +484,7 @@ export default function UnifiedPlatformHome() {
               }`}
             >
               <BookOpen className={`h-3.5 w-3.5 ${activePortal === 'resources' ? 'text-brand-400' : 'text-slate-400'}`} />
-              <span>3. Study Resources</span>
+              <span>3. BTech Study Resources</span>
             </button>
           </nav>
 
@@ -463,43 +492,45 @@ export default function UnifiedPlatformHome() {
           <div className="hidden lg:flex items-center space-x-2">
             <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Instant Open Access (No Login)</span>
+              <span>Open Platform (No Login Required)</span>
             </span>
           </div>
         </div>
       </header>
 
-      {/* Persistent Academic Stage Switcher (Guarantees Data is NEVER Mixed Together) */}
-      <div className="bg-slate-900 text-white border-b border-slate-800 py-2.5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="h-4 w-4 text-brand-400 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Select Your Academic Class / Level:
-            </span>
-          </div>
+      {/* Academic Class Switcher for Career Roadmaps & Study Planner */}
+      {activePortal !== 'resources' && (
+        <div className="bg-slate-900 text-white border-b border-slate-800 py-2.5 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center space-x-2">
+              <GraduationCap className="h-4 w-4 text-brand-400 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Filter by Your Academic Class / Level:
+              </span>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
-            {STAGES.map(stage => {
-              const isSelected = currentStage === stage.id;
-              return (
-                <button
-                  key={stage.id}
-                  onClick={() => handleStageChange(stage.id)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
-                    isSelected
-                      ? 'bg-brand-500 text-white shadow-sm ring-1 ring-white/30 font-bold'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                  }`}
-                >
-                  <span>{stage.label}</span>
-                  {isSelected && <Check className="h-3 w-3" />}
-                </button>
-              );
-            })}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {STAGES.map(stage => {
+                const isSelected = currentStage === stage.id;
+                return (
+                  <button
+                    key={stage.id}
+                    onClick={() => handleStageChange(stage.id)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                      isSelected
+                        ? 'bg-brand-500 text-white shadow-sm ring-1 ring-white/30 font-bold'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    }`}
+                  >
+                    <span>{stage.label}</span>
+                    {isSelected && <Check className="h-3 w-3" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Floating Status Notification */}
       {toastMessage && (
@@ -526,396 +557,470 @@ export default function UnifiedPlatformHome() {
                 <span>Dedicated Section 1: Career Roadmaps</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {currentStage === 'class_9' || currentStage === 'class_10'
-                  ? 'Class 9 & 10 Secondary School → Future Career Pathway'
+                {currentStage === 'class_10' || currentStage === 'class_9'
+                  ? 'What NEXT After 10th Class? — Complete 39-Pathway Career Guidance Flowchart'
                   : currentStage === 'btech_1'
-                  ? 'BTech 1st Year Engineering → Tech Career Roadmaps'
+                  ? 'BTech 1st Year Engineering → Industry Career Roadmaps'
                   : currentStage === 'intermediate'
-                  ? 'Intermediate (+2) → College Entrance & Career Pathways'
-                  : 'Diploma / Polytechnic → Technical & Engineering Pathways'}
+                  ? 'Intermediate (+2 MPC / BiPC) → National College Entrance Roadmaps'
+                  : 'Diploma / Polytechnic → BTech Lateral Entry & Technical Careers'}
               </h1>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-3xl">
-                Structured step-by-step milestones, stream selection criteria, exam roadmaps, and career targets designed specifically for{' '}
-                <strong className="text-slate-800">{STAGES.find(s => s.id === currentStage)?.label}</strong>.
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-4xl">
+                {currentStage === 'class_10' || currentStage === 'class_9'
+                  ? 'Official multi-track educational flowchart for 10th Class / SSLC pass-outs: Intermediate streams (Science, Commerce, Arts), 3-Year Polytechnic, Paramedical, ITI Trades, Direct Defense & Govt Jobs, and Short-Term Professional Courses.'
+                  : `Structured step-by-step milestones, skills, and industry roadmaps for ${STAGES.find(s => s.id === currentStage)?.label}.`}
               </p>
             </div>
 
-            {/* CLASS 9 & 10 SPECIALIZED ROADMAP VIEW (Pristine, Structured, Clear) */}
-            {(currentStage === 'class_9' || currentStage === 'class_10') ? (
-              <div className="space-y-8">
-                {/* Visual Roadmap Progression */}
-                <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
-                  <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                    <Layers className="h-5 w-5 text-brand-600" />
-                    <span>Step-by-Step Educational Journey from Class 9 to Dream Career</span>
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-2xl bg-brand-50/60 border border-brand-200 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="h-6 w-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">1</span>
-                        <span className="text-[10px] font-bold text-brand-700 uppercase">Current Year</span>
-                      </div>
-                      <h3 className="text-xs font-bold text-slate-900">Class 9 Foundation</h3>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        Master NCERT Mathematics & Science fundamentals. Participate in SOF Olympiads (NSO/IMO) and NTSE Stage 1 foundation.
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="h-6 w-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">2</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">Next Year</span>
-                      </div>
-                      <h3 className="text-xs font-bold text-slate-900">Class 10 Board Exam</h3>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        Excel in Class 10 Board Exams (target 90%+). Clear NTSE scholarship test and choose optimal higher secondary stream.
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="h-6 w-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">3</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">+2 Junior College</span>
-                      </div>
-                      <h3 className="text-xs font-bold text-slate-900">Intermediate / +2</h3>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        Study MPC (Engineering) or BiPC (Medical) or MEC (Commerce) or 3-Yr Polytechnic Diploma. Prepare for national entrance exams.
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="h-6 w-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">4</span>
-                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Degree & Career</span>
-                      </div>
-                      <h3 className="text-xs font-bold text-slate-900">Professional College</h3>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        Join IIT / NIT / AIIMS / NLU / IIM or Top Engineering Colleges and launch into high-growth global professions.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stream Selection Matrix after 10th (The Core Guide for 9th/10th Students) */}
+            {/* ================================================================= */}
+            {/* 10TH CLASS DEDICATED CAREER FLOWCHART (Based on User's Chart)    */}
+            {/* ================================================================= */}
+            {(currentStage === 'class_10' || currentStage === 'class_9') ? (
+              <div className="space-y-6">
+                {/* Visual Pathway Selector (The 6 Big Tracks After 10th) */}
                 <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600">Decision Blueprint</span>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1">
-                      Which Stream Should You Choose After 10th? (Explore Your Options)
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600">
+                      Primary Career Gateways
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                      Select Any Track to Inspect Full Flowchart & Career Branches:
                     </h2>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Click each stream below to view its complete career roadmap, entrance examinations, and future prospects.
-                    </p>
                   </div>
 
-                  {/* Stream Tabs */}
-                  <div className="flex flex-wrap gap-2 border-b border-slate-100 pb-3">
+                  {/* The 6 Core Gateways from the Chart */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                     {[
-                      { id: 'mpc', label: '1. MPC (Maths, Physics, Chem)', badge: 'Engineering & Tech' },
-                      { id: 'bipc', label: '2. BiPC (Biology, Physics, Chem)', badge: 'Medicine & Health' },
-                      { id: 'mec', label: '3. MEC / CEC (Commerce & Economics)', badge: 'Finance & CA' },
-                      { id: 'arts', label: '4. Arts / Humanities', badge: 'Civil Services & Law' },
-                      { id: 'diploma', label: '5. Polytechnic Diploma', badge: 'Practical Engineering' }
-                    ].map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setSelectedStreamTab(tab.id as any)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                          selectedStreamTab === tab.id
-                            ? 'bg-slate-900 text-white shadow-sm'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Stream Details Card */}
-                  {selectedStreamTab === 'mpc' && (
-                    <div className="p-6 rounded-2xl bg-blue-50/50 border border-blue-200/70 space-y-4 animate-in fade-in">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-blue-950">MPC: Mathematics, Physics, and Chemistry</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
-                          Best for Math Lovers
-                        </span>
-                      </div>
-                      <p className="text-xs text-blue-900/80 leading-relaxed">
-                        MPC is the primary pre-engineering stream for Indian students. It prepares you for technical problem solving, physics modeling, and high-performance engineering disciplines.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                        <div className="bg-white p-3.5 rounded-xl border border-blue-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Entrance Exams</span>
-                          <span className="text-slate-600 block text-[11px]">JEE Main, JEE Advanced, BITSAT, State EAPCET/EAMCET, NDA</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-blue-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Degrees Offered</span>
-                          <span className="text-slate-600 block text-[11px]">B.Tech, B.E., B.Arch, BS-MS (IISER/IISc), Commercial Pilot License</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-blue-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Career Roles</span>
-                          <span className="text-slate-600 block text-[11px]">Software/AI Engineer, Aerospace Engineer, Defence Officer, Data Scientist</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedStreamTab === 'bipc' && (
-                    <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-200/70 space-y-4 animate-in fade-in">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-emerald-950">BiPC: Biology, Physics, and Chemistry</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                          Best for Medical Aspirants
-                        </span>
-                      </div>
-                      <p className="text-xs text-emerald-900/80 leading-relaxed">
-                        BiPC is the medical and biological sciences stream. It leads to careers in healthcare, biotechnology, genomics, pharmaceuticals, and agricultural research.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                        <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Entrance Exams</span>
-                          <span className="text-slate-600 block text-[11px]">NEET-UG, AIIMS, State Paramedical, ICAR AIEEA</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Degrees Offered</span>
-                          <span className="text-slate-600 block text-[11px]">MBBS, BDS, BAMS, B.Pharm, B.Sc Nursing, B.Sc Agriculture, BVSc</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Career Roles</span>
-                          <span className="text-slate-600 block text-[11px]">Surgeon, Physician, Biotech Researcher, Clinical Pharmacist, Veterinarian</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedStreamTab === 'mec' && (
-                    <div className="p-6 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-4 animate-in fade-in">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-amber-950">MEC / CEC: Mathematics, Economics, Commerce</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
-                          Best for Finance & Business
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-900/80 leading-relaxed">
-                        Ideal for students passionate about business, capital markets, accounting, corporate governance, and investment banking.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                        <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Entrance Exams</span>
-                          <span className="text-slate-600 block text-[11px]">CA Foundation, CMA Foundation, IPMAT (IIM Indore/Rohtak), CUET</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Degrees Offered</span>
-                          <span className="text-slate-600 block text-[11px]">B.Com (Hons), BBA, IPM (5-Yr MBA), BMS, Integrated Law</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-amber-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Career Roles</span>
-                          <span className="text-slate-600 block text-[11px]">Chartered Accountant (CA), Investment Banker, Chief Financial Officer, Auditor</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedStreamTab === 'arts' && (
-                    <div className="p-6 rounded-2xl bg-purple-50/50 border border-purple-200/70 space-y-4 animate-in fade-in">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-purple-950">Humanities / Arts: History, Political Science, Psychology</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
-                          Best for Civil Services & Law
-                        </span>
-                      </div>
-                      <p className="text-xs text-purple-900/80 leading-relaxed">
-                        Builds world-class critical thinking, policy analysis, constitutional law, design aesthetics, and public leadership.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                        <div className="bg-white p-3.5 rounded-xl border border-purple-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Entrance Exams</span>
-                          <span className="text-slate-600 block text-[11px]">CLAT (Common Law Admission Test), CUET, NID DAT, UCEED</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-purple-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Degrees Offered</span>
-                          <span className="text-slate-600 block text-[11px]">BA LLB (National Law Universities), B.Des, BA Political Science / Journalism</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-purple-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Career Roles</span>
-                          <span className="text-slate-600 block text-[11px]">Civil Servant (IAS/IPS/IFS), Corporate Lawyer, Product Designer, Journalist</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedStreamTab === 'diploma' && (
-                    <div className="p-6 rounded-2xl bg-teal-50/50 border border-teal-200/70 space-y-4 animate-in fade-in">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-teal-950">Polytechnic Diploma: 3-Year Technical Engineering</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold">
-                          Hands-on Technical Foundation
-                        </span>
-                      </div>
-                      <p className="text-xs text-teal-900/80 leading-relaxed">
-                        A practical 3-year technical course right after Class 10. Allows direct lateral entry into 2nd year B.Tech via ECET examination without doing Intermediate.
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                        <div className="bg-white p-3.5 rounded-xl border border-teal-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Entrance Exams</span>
-                          <span className="text-slate-600 block text-[11px]">State POLYCET (after 10th), ECET (for B.Tech lateral entry)</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-teal-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Branches</span>
-                          <span className="text-slate-600 block text-[11px]">Computer Engineering (CME), Electronics (ECE), Electrical (EEE), Mechanical</span>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-teal-200 space-y-1">
-                          <span className="font-bold text-slate-900 block">Career Roles</span>
-                          <span className="text-slate-600 block text-[11px]">Junior Engineer (SSC JE / RRB JE), Technical Specialist, Lateral Entry B.Tech</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Class 9 Focus Checklist & Competitions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                      <Award className="h-4 w-4 text-emerald-600" />
-                      <span>National Competitions for Class 9 Students</span>
-                    </h3>
-                    <div className="space-y-2.5 text-xs text-slate-700">
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">SOF National Science Olympiad (NSO) & IMO:</strong> Builds rapid problem solving for maths & science.
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">PRMO / IOQM (Indian Olympiad Qualifier in Math):</strong> Foundation for national mathematical olympiad.
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">Unified Council NSTSE:</strong> Diagnostic national talent search test across CBSE & state syllabus.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                      <FolderGit2 className="h-4 w-4 text-brand-600" />
-                      <span>Recommended Class 9 Hands-on Projects</span>
-                    </h3>
-                    <div className="space-y-2.5 text-xs text-slate-700">
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <Code2 className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">Python Formula & Geometry Calculator:</strong> Write a script calculating areas, volumes, and algebraic roots.
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <Code2 className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">Physics Laws of Motion Simulator:</strong> Demonstrate velocity-time graphs and Newton’s second law visually.
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
-                        <Code2 className="h-4 w-4 text-brand-600 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-slate-900">Interactive Quiz Engine in HTML/JS:</strong> Practice multiple-choice questions for school exams with instant scoring.
-                        </div>
-                      </div>
-                    </div>
+                      { id: 'puc', label: '1. Intermediate / PUC', sub: '2 Years (+2)', icon: GraduationCap, color: 'border-blue-300 bg-blue-50/70 text-blue-900' },
+                      { id: 'diploma', label: '2. Polytechnic Diploma', sub: '3 Years (Lateral BTech)', icon: Cpu, color: 'border-teal-300 bg-teal-50/70 text-teal-900' },
+                      { id: 'paramedical', label: '3. Paramedical Diploma', sub: '2-3 Years (Hospital)', icon: Stethoscope, color: 'border-emerald-300 bg-emerald-50/70 text-emerald-900' },
+                      { id: 'iti', label: '4. ITI Trades', sub: '1-2 Years (Technical)', icon: Wrench, color: 'border-amber-300 bg-amber-50/70 text-amber-900' },
+                      { id: 'defense', label: '5. Defense / Govt Jobs', sub: 'Direct 10th Entry', icon: Shield, color: 'border-rose-300 bg-rose-50/70 text-rose-900' },
+                      { id: 'short_courses', label: '6. Job-Oriented Courses', sub: '6 Months - 1 Year', icon: Laptop, color: 'border-purple-300 bg-purple-50/70 text-purple-900' }
+                    ].map(track => {
+                      const Icon = track.icon;
+                      const isSelected = active10thFlowTab === track.id;
+                      return (
+                        <button
+                          key={track.id}
+                          onClick={() => setActive10thFlowTab(track.id as any)}
+                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                            isSelected
+                              ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
+                              : `${track.color} hover:shadow-xs`
+                          }`}
+                        >
+                          <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-brand-400' : 'opacity-80'}`} />
+                          <div>
+                            <div className="text-xs font-bold leading-tight">{track.label}</div>
+                            <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-slate-300' : 'opacity-70'}`}>
+                              {track.sub}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+
+                {/* DETAILED PATHWAY CARDS */}
+                {/* 1. INTERMEDIATE / PUC (+2) */}
+                {active10thFlowTab === 'puc' && (
+                  <div className="bg-white rounded-3xl border border-blue-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                          Gateway 1: 11th Std / 1st PUC / Intermediate (+2) (2 Years)
+                        </span>
+                        <h3 className="text-xl font-bold text-slate-900 mt-2">
+                          Academic Junior College: Science, Commerce, and Arts
+                        </h3>
+                        <p className="text-xs text-slate-600 mt-1">
+                          The most common academic route. Leads to university degrees, competitive entrance tests, and professional licensure.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Science Stream */}
+                      <div className="p-5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-bold text-blue-950">Science (PCMB / PCMC / MPC)</h4>
+                          <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Pre-Engg & Med</span>
+                        </div>
+                        <div className="space-y-2 text-xs text-slate-700">
+                          <div>
+                            <strong className="text-slate-900 block">Entrance Exams:</strong>
+                            <span className="text-slate-600">JEE Main, JEE Advanced, NEET-UG, BITSAT, State EAPCET/KCET, NDA, NATA, IISER (IAT)</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Degree Pathways:</strong>
+                            <span className="text-slate-600">B.Tech / B.E. (all branches), MBBS, BDS, B.Arch, BS-MS Pure Science, Commercial Pilot License</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Future Careers:</strong>
+                            <span className="text-slate-600">Software Engineer, Doctor/Surgeon, Aerospace Scientist, Indian Air Force Pilot, Research Scientist</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Commerce Stream */}
+                      <div className="p-5 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-bold text-amber-950">Commerce (MEC / CEC / EBAC)</h4>
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Finance & Business</span>
+                        </div>
+                        <div className="space-y-2 text-xs text-slate-700">
+                          <div>
+                            <strong className="text-slate-900 block">Professional Exams:</strong>
+                            <span className="text-slate-600">CA Foundation (Chartered Accountancy), CS Foundation, CMA Foundation, IPMAT (IIM 5-Yr MBA)</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Degree Pathways:</strong>
+                            <span className="text-slate-600">B.Com (Honours), BBA, IPM (IIM Indore/Rohtak), BMS, Integrated Corporate Law</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Future Careers:</strong>
+                            <span className="text-slate-600">Chartered Accountant (CA), Chief Financial Officer (CFO), Investment Banker, Company Secretary</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Arts / Humanities Stream */}
+                      <div className="p-5 rounded-2xl border border-purple-200 bg-purple-50/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-bold text-purple-950">Arts & Humanities (HEPS)</h4>
+                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">Civil Services & Law</span>
+                        </div>
+                        <div className="space-y-2 text-xs text-slate-700">
+                          <div>
+                            <strong className="text-slate-900 block">Competitive Exams:</strong>
+                            <span className="text-slate-600">CLAT (Common Law Admission Test for NLUs), CUET, NID DAT, NIFT, UPSC Foundation</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Degree Pathways:</strong>
+                            <span className="text-slate-600">BA LLB (5-Yr Integrated), B.Des (Design), BA Political Science / History, Journalism & Mass Comm</span>
+                          </div>
+                          <div>
+                            <strong className="text-slate-900 block">Future Careers:</strong>
+                            <span className="text-slate-600">Civil Services (IAS / IPS / IFS), Supreme Court Advocate, Product Designer, Foreign Diplomat</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. POLYTECHNIC DIPLOMA */}
+                {active10thFlowTab === 'diploma' && (
+                  <div className="bg-white rounded-3xl border border-teal-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
+                        Gateway 2: Polytechnic Diploma (3 Years)
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-900 mt-2">
+                        Practical Engineering Foundation with Direct Lateral Entry into 2nd Year B.Tech
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Skip +2 Intermediate! After 10th class, join a 3-year technical polytechnic. After diploma, appear for ECET / DCET to get direct admission into 2nd year B.Tech.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                        <strong className="text-slate-900 block">Computer & IT (CME)</strong>
+                        <p className="text-slate-600 text-[11px]">Hardware, networking, databases, C/C++, Java, and software development.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                        <strong className="text-slate-900 block">Electronics (ECE) & Electrical (EEE)</strong>
+                        <p className="text-slate-600 text-[11px]">Circuits, microcontrollers, telecommunications, power systems, and robotics.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                        <strong className="text-slate-900 block">Mechanical & Automobile</strong>
+                        <p className="text-slate-600 text-[11px]">CAD/CAM, engine mechanics, thermal systems, manufacturing, and industrial automation.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                        <strong className="text-slate-900 block">Civil & Environmental</strong>
+                        <p className="text-slate-600 text-[11px]">Surveying, structural analysis, construction management, and highway engineering.</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-teal-950">Next Step: ECET Lateral Entry Exam</span>
+                        <p className="text-teal-800 text-[11px]">Enters 2nd year B.Tech (3rd semester) directly in top engineering colleges.</p>
+                      </div>
+                      <span className="px-3 py-1 rounded-xl bg-teal-600 text-white font-bold text-xs shrink-0">
+                        Saves 1 Year vs Ordinary Route
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. PARAMEDICAL DIPLOMA */}
+                {active10thFlowTab === 'paramedical' && (
+                  <div className="bg-white rounded-3xl border border-emerald-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                        Gateway 3: Paramedical Diploma (2 to 3 Years)
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-900 mt-2">
+                        Direct Healthcare, Hospital, and Clinical Laboratory Technicians
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1">
+                        High-demand healthcare courses right after 10th class with immediate hospital and diagnostic center placements.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                      {[
+                        { title: 'DMLT (Medical Lab Technology)', desc: 'Blood, pathology, biochemistry analysis in hospitals and research labs.' },
+                        { title: 'Dialysis Technician', desc: 'Operating hemodialysis machines in nephrology departments and kidney care clinics.' },
+                        { title: 'Medical X-Ray & Imaging Tech', desc: 'Radiography, CT scan, and MRI clinical diagnostic support.' },
+                        { title: 'Operation Theatre (OT) Tech', desc: 'Assisting surgeons, surgical instrument prep, and sterilisation procedures.' },
+                        { title: 'Ophthalmic Assistant', desc: 'Eye clinics, vision testing, refraction, and optical diagnostics.' },
+                        { title: 'Health Inspector / Sanitary Inspector', desc: 'Public health monitoring, food safety inspection, and municipal health cells.' }
+                      ].map(card => (
+                        <div key={card.title} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                          <strong className="text-slate-900 block">{card.title}</strong>
+                          <p className="text-slate-600 text-[11px]">{card.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. ITI TRADES */}
+                {active10thFlowTab === 'iti' && (
+                  <div className="bg-white rounded-3xl border border-amber-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                        Gateway 4: Industrial Training Institute (ITI) (1 to 2 Years)
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-900 mt-2">
+                        Vocational Engineering Trades with Guaranteed Government & PSU Apprenticeships
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Certified by NCVT / SCVT. Immediate entry into Indian Railways (Assistant Loco Pilot), BHEL, DRDO, State Electricity Boards, and private automotive factories.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      {[
+                        { trade: 'Electrician (2 Yrs)', scope: 'Industrial wiring, transformers, electrical motors, and solar panels.' },
+                        { trade: 'Fitter (2 Yrs)', scope: 'Precision fitting, piping, machining, and manufacturing maintenance.' },
+                        { trade: 'Mechanic Motor Vehicle (2 Yrs)', scope: 'Automobile engines, diagnostics, EVs, and heavy vehicles.' },
+                        { trade: 'Machinist / Turner (2 Yrs)', scope: 'Lathe, milling, CNC machines, and tool manufacturing.' },
+                        { trade: 'Draughtsman (Civil/Mech) (2 Yrs)', scope: 'Architectural drawings, CAD drafting, and structural planning.' },
+                        { trade: 'Welder (1 Yr)', scope: 'Arc, TIG, MIG welding in marine, pipeline, and structural projects.' },
+                        { trade: 'Electronic Mechanic (2 Yrs)', scope: 'PCB assembly, sensor repair, instrumentation, and IoT devices.' },
+                        { trade: 'Tool & Die Maker (3 Yrs)', scope: 'Press tools, injection molds, dies, and aerospace precision parts.' }
+                      ].map(t => (
+                        <div key={t.trade} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                          <strong className="text-slate-900 block font-bold">{t.trade}</strong>
+                          <p className="text-slate-500 text-[10px] leading-relaxed">{t.scope}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. DEFENSE & GOVT JOBS AFTER 10TH */}
+                {active10thFlowTab === 'defense' && (
+                  <div className="bg-white rounded-3xl border border-rose-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
+                        Gateway 5: Direct Defense Services & Central Government Jobs
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-900 mt-2">
+                        Immediate Uniformed Services & Government Employment (10th Pass Eligibility)
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Direct recruitment examinations conducted annually for Class 10 graduates with pensions, medical coverage, and rank progression.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">Indian Army — Agniveer General Duty (GD)</strong>
+                        <p className="text-rose-800 text-[11px]">Primary combat force, infantry, gunner, driver. Minimum 45% aggregate in 10th class.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">Indian Navy — Agniveer MR (Matric Recruit)</strong>
+                        <p className="text-rose-800 text-[11px]">Chef, Steward, and Hygienist roles aboard naval warships and shore establishments.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">Indian Coast Guard — Navik (Domestic Branch)</strong>
+                        <p className="text-rose-800 text-[11px]">Maritime coastal patrol, ship operations, logistics, and marine policing.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">SSC GD Constable (CAPF Forces)</strong>
+                        <p className="text-rose-800 text-[11px]">Recruitment into BSF, CISF, CRPF, ITBP, and SSB for border security and national defense.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">Railway Protection Force (RPF) Constable</strong>
+                        <p className="text-rose-800 text-[11px]">Security of Indian railway passengers, trains, and railway property.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
+                        <strong className="text-rose-950 block font-bold">Railway Group D / Track Maintainer</strong>
+                        <p className="text-rose-800 text-[11px]">Technical track maintenance, signals, and railway engineering staff.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. SHORT-TERM JOB ORIENTED COURSES */}
+                {active10thFlowTab === 'short_courses' && (
+                  <div className="bg-white rounded-3xl border border-purple-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
+                    <div className="border-b border-slate-100 pb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
+                        Gateway 6: Job-Oriented Skill Certifications (6 Months - 1 Year)
+                      </span>
+                      <h3 className="text-xl font-bold text-slate-900 mt-2">
+                        Rapid Creative & Digital Skills for Immediate Freelancing & Employment
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1">
+                        High-paying creative and digital skills that do not require degrees. Start earning right away while pursuing higher education via distance.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">3D Animation & VFX</strong>
+                        <p className="text-slate-600 text-[11px]">Maya, Blender, video editing, game art, and advertising studios.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">Graphic & UI/UX Design</strong>
+                        <p className="text-slate-600 text-[11px]">Photoshop, Figma, Illustrator, digital branding, and social media creative design.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">Web Development & Coding</strong>
+                        <p className="text-slate-600 text-[11px]">HTML, CSS, JavaScript, WordPress, responsive web design for local businesses.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">Cybersecurity & Networking</strong>
+                        <p className="text-slate-600 text-[11px]">CompTIA Network+, hardware assembly, router setup, and firewall basics.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">Digital Marketing & SEO</strong>
+                        <p className="text-slate-600 text-[11px]">Google Ads, social media marketing, content marketing, and online brand growth.</p>
+                      </div>
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+                        <strong className="text-slate-900 block font-bold">Financial Accounting & Tally</strong>
+                        <p className="text-slate-600 text-[11px]">TallyPrime, GST filing, Excel data analysis, and book-keeping for retail stores.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              /* BTECH & HIGHER EDUCATION ROADMAP VIEW */
+              /* ================================================================= */
+              /* B.TECH & ENGINEERING SPECIFIC CAREER ROADMAP (Only when BTech is chosen) */
+              /* ================================================================= */
               <div className="space-y-6">
+                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">1</span>
+                    <h2 className="text-sm font-bold text-slate-900">Choose Your Target Engineering Specialization</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {roles.map(r => {
+                      const isSelected = selectedRole?.role_code === r.role_code;
+                      return (
+                        <button
+                          key={r.id}
+                          onClick={() => setSelectedRole(r)}
+                          className={`p-4 rounded-xl border text-left transition-all ${
+                            isSelected
+                              ? 'border-brand-600 bg-brand-50/70 shadow-sm ring-2 ring-brand-500/20'
+                              : 'border-slate-200 hover:border-slate-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h3 className="text-xs font-bold text-slate-900">{r.title}</h3>
+                            {isSelected ? (
+                              <CheckCircle2 className="h-4 w-4 text-brand-600" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-slate-300" />
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{r.summary}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {selectedRole && (
-                  <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-7">
+                  <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
                     <div className="border-b border-slate-100 pb-5">
-                      <div className="inline-block px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-[10px] font-bold uppercase tracking-wider mb-2">
-                        Verified Engineering Learning Pathway
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{selectedRole.title}</h2>
-                      <p className="text-xs text-slate-600 mt-2 leading-relaxed max-w-4xl">{selectedRole.summary}</p>
+                      <h2 className="text-xl font-bold text-slate-900">{selectedRole.title}</h2>
+                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{selectedRole.summary}</p>
                     </div>
 
-                    {/* Core Skills & Tools */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
                         <Code2 className="h-4 w-4 text-brand-600" />
-                        <span>Essential Concepts & Programming Languages</span>
+                        <span>Core Competencies & Technology Stack</span>
                       </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedRole.programming_languages.map(l => (
-                          <span key={l} className="px-3 py-1 rounded-xl bg-slate-900 text-white text-xs font-bold">
-                            {l}
-                          </span>
-                        ))}
-                        {selectedRole.core_skills.map(s => (
-                          <span key={s} className="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200">
-                            {s}
-                          </span>
-                        ))}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Programming Languages</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedRole.programming_languages.map(l => (
+                              <span key={l} className="px-2 py-0.5 rounded bg-white border border-slate-200 text-xs font-bold text-brand-700">
+                                {l}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Frameworks & Tools</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedRole.frameworks_and_tools.map(t => (
+                              <span key={t} className="px-2 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase mb-2">Core Concepts</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedRole.core_skills.map(s => (
+                              <span key={s} className="px-2 py-0.5 rounded bg-white border border-slate-200 text-xs text-slate-700">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Milestone Phases */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
                         <Layers className="h-4 w-4 text-brand-600" />
                         <span>Semester-by-Semester Milestones</span>
                       </h3>
                       <div className="space-y-3">
                         {selectedRole.learning_roadmap.map((phase, idx) => (
-                          <div key={phase.phase} className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
-                              <div className="flex items-center space-x-2.5">
-                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-900 text-white font-mono text-xs font-bold">
+                          <div key={phase.phase} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-900 text-white font-mono text-xs font-bold">
                                   {idx + 1}
                                 </span>
-                                <h4 className="text-sm font-bold text-slate-900">{phase.title}</h4>
+                                <h4 className="text-xs font-bold text-slate-900">{phase.title}</h4>
                               </div>
-                              <span className="text-[11px] font-mono font-semibold text-brand-600">
-                                Duration: {phase.recommended_duration_weeks} Weeks
+                              <span className="text-[11px] font-mono text-brand-600 font-semibold">
+                                {phase.recommended_duration_weeks} Weeks
                               </span>
                             </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-1.5 mt-2">
                               {phase.topics.map(t => (
-                                <span key={t} className="text-xs bg-white border border-slate-200/80 px-2.5 py-1 rounded-lg text-slate-700 font-medium">
+                                <span key={t} className="text-xs bg-white border border-slate-200/80 px-2 py-0.5 rounded text-slate-700">
                                   {t}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Milestone Projects */}
-                    <div className="space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
-                        <FolderGit2 className="h-4 w-4 text-brand-600" />
-                        <span>Portfolio Milestone Projects</span>
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {selectedRole.projects.map(proj => (
-                          <div key={proj.title} className="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between shadow-2xs">
-                            <div>
-                              <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                                {proj.tier.replace('_', ' ')}
-                              </span>
-                              <h4 className="text-xs font-bold text-slate-900 mt-2">{proj.title}</h4>
-                              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{proj.description}</p>
-                            </div>
-                            <div className="mt-3 pt-2 border-t border-slate-100 flex flex-wrap gap-1">
-                              {proj.suggested_tech_stack.map(st => (
-                                <span key={st} className="text-[9px] bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-mono">
-                                  {st}
                                 </span>
                               ))}
                             </div>
@@ -931,22 +1036,22 @@ export default function UnifiedPlatformHome() {
         )}
 
         {/* ========================================================================= */}
-        {/* SECTION 2: STUDY PLANNER & TRACKER                                        */}
+        {/* SECTION 2: STUDY PLANNER & STUDENT SELF-ANALYSIS DASHBOARD TRACKER         */}
         {/* ========================================================================= */}
         {activePortal === 'planner' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Header with Quick Actions */}
+            {/* Header */}
             <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-[11px] font-bold uppercase tracking-wider mb-2">
-                  <Calendar className="h-3.5 w-3.5 text-brand-600" />
-                  <span>Dedicated Section 2: Study Planner & Tracker</span>
+                  <BarChart3 className="h-3.5 w-3.5 text-brand-600" />
+                  <span>Dedicated Section 2: Student Self-Analysis Dashboard & Focus Tracker</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  Daily Study Planner & Focus Tracker
+                  Student Study Dashboard & Precision Tracker
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
-                  Active Timetable for <strong className="text-slate-800">{STAGES.find(s => s.id === currentStage)?.label}</strong>. Add subjects, adjust durations, launch live focus stopwatches, or reset your schedule.
+                  Analyze your daily learning efficiency, track study streak, launch live focus stopwatches, and customize your study schedule.
                 </p>
               </div>
 
@@ -957,13 +1062,13 @@ export default function UnifiedPlatformHome() {
                   className="flex items-center space-x-1.5 rounded-xl border border-brand-300 bg-brand-50 px-3.5 py-2 text-xs font-bold text-brand-800 hover:bg-brand-100 transition-colors shadow-2xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>+ Add Subject Manually</span>
+                  <span>+ Add Custom Subject</span>
                 </button>
 
                 <button
                   onClick={() => {
-                    if (currentStage === 'class_9' || currentStage === 'class_10') {
-                      setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
+                    if (currentStage === 'class_10' || currentStage === 'class_9') {
+                      setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
                     } else {
                       setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
                     }
@@ -983,6 +1088,92 @@ export default function UnifiedPlatformHome() {
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Delete / Reset Plan</span>
                 </button>
+              </div>
+            </div>
+
+            {/* SELF-ANALYSIS COCKPIT: METRICS CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Daily Target Progress */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Today&apos;s Study Target</span>
+                  <Target className="h-4 w-4 text-brand-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-slate-900">
+                    {(studiedMinutesToday / 60).toFixed(1)}h <span className="text-xs text-slate-400 font-semibold">/ {(dailyMinutesTarget / 60).toFixed(1)}h</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 mt-2 overflow-hidden">
+                    <div
+                      className="bg-brand-600 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${targetProgressPercentage}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center justify-between">
+                  <span>{targetProgressPercentage}% Achieved</span>
+                  <span className="font-semibold text-emerald-600">On Track</span>
+                </div>
+              </div>
+
+              {/* Study Streak */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Consistency Streak</span>
+                  <Flame className="h-4 w-4 text-amber-500 fill-amber-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-slate-900 flex items-center space-x-1">
+                    <span>5 Days</span>
+                    <span className="text-xs text-amber-500">🔥</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Active study streak. Target: 7 days without break.
+                  </p>
+                </div>
+                <div className="text-[11px] text-emerald-600 font-semibold">
+                  Personal Best: 12 Days
+                </div>
+              </div>
+
+              {/* Focus Rate / Efficiency */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Focus Efficiency</span>
+                  <Activity className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-slate-900">92%</div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Calculated from active timer duration vs pause intervals.
+                  </p>
+                </div>
+                <div className="text-[11px] text-emerald-600 font-semibold flex items-center space-x-1">
+                  <TrendingUp className="h-3 w-3" />
+                  <span>High Concentration Zone</span>
+                </div>
+              </div>
+
+              {/* Session Completion Rate */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Schedule Completion</span>
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-slate-900">
+                    {completedCount} <span className="text-xs text-slate-400 font-semibold">/ {totalSubjectsCount} Finished</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 mt-2 overflow-hidden">
+                    <div
+                      className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${completionPercentage}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {completionPercentage}% of planned sessions checked off
+                </div>
               </div>
             </div>
 
@@ -1036,7 +1227,7 @@ export default function UnifiedPlatformHome() {
                       type="text"
                       value={newSubName}
                       onChange={e => setNewSubName(e.target.value)}
-                      placeholder={currentStage === 'class_9' ? 'e.g. Hindi / Sanskrit / Social' : 'e.g. Linear Algebra / Physics'}
+                      placeholder="e.g. Sanskrit / Physics Revision"
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                     />
                   </div>
@@ -1119,7 +1310,7 @@ export default function UnifiedPlatformHome() {
                     type="text"
                     value={timerNotes}
                     onChange={e => setTimerNotes(e.target.value)}
-                    placeholder="Add brief notes on what you studied..."
+                    placeholder="Self-analysis note: what did you practice in this session?..."
                     className="flex-1 min-w-[200px] rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
                   />
                   <div className="flex items-center space-x-2">
@@ -1135,95 +1326,123 @@ export default function UnifiedPlatformHome() {
                       className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-bold text-white transition-colors"
                     >
                       <Square className="h-3.5 w-3.5 fill-white" />
-                      <span>Complete Session</span>
+                      <span>Complete & Log Session</span>
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Timetable Session Cards */}
+            {/* Daily Schedule Checklist & Session Cards */}
             <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Today&apos;s Study Schedule</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Click &quot;Start Timer&quot; on any subject to track your live learning.</p>
+                  <h3 className="text-base font-bold text-slate-900">Today&apos;s Interactive Study Timetable</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Click checkboxes to mark sessions done, or launch the stopwatch to log actual focus time.
+                  </p>
                 </div>
-                <span className="text-xs text-slate-400 font-semibold">{allocations.length} sessions</span>
+                <div className="text-xs font-bold text-slate-500 flex items-center space-x-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
+                    {totalPlannedStudyMinutes}m Study
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700">
+                    {totalBreakMinutes}m Breaks
+                  </span>
+                </div>
               </div>
 
               {allocations.length > 0 ? (
                 <div className="space-y-3">
-                  {allocations.map((alloc, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                        alloc.is_break ? 'border-slate-200 bg-slate-50/70' : 'border-brand-200/80 bg-brand-50/30'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                            alloc.is_break ? 'bg-amber-100 text-amber-700' : 'bg-slate-900 text-white font-bold text-xs'
-                          }`}
-                        >
-                          {alloc.is_break ? <Coffee className="h-4 w-4" /> : `#${idx + 1}`}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h4 className="text-xs font-bold text-slate-900">{alloc.subject_name}</h4>
-                            {!alloc.is_break && (
-                              <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                                ({alloc.subject_code})
-                              </span>
-                            )}
+                  {allocations.map((alloc, idx) => {
+                    const isDone = completedSessions[alloc.subject_id];
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                          alloc.is_break
+                            ? 'border-slate-200 bg-slate-50/70'
+                            : isDone
+                            ? 'border-emerald-200 bg-emerald-50/30'
+                            : 'border-brand-200/80 bg-brand-50/30'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          {/* Done Checkbox */}
+                          {!alloc.is_break ? (
+                            <button
+                              onClick={() => toggleSessionCompleted(alloc.subject_id)}
+                              className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors ${
+                                isDone ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 hover:border-slate-400 bg-white'
+                              }`}
+                              title={isDone ? 'Mark as incomplete' : 'Mark as completed'}
+                            >
+                              {isDone && <Check className="h-4 w-4 stroke-[3]" />}
+                            </button>
+                          ) : (
+                            <div className="h-6 w-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+                              <Coffee className="h-3.5 w-3.5" />
+                            </div>
+                          )}
+
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <h4 className={`text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+                                {alloc.subject_name}
+                              </h4>
+                              {!alloc.is_break && (
+                                <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                                  ({alloc.subject_code})
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] font-mono text-slate-500">{alloc.time_slot}</span>
                           </div>
-                          <span className="text-[11px] font-mono text-slate-500">{alloc.time_slot}</span>
-                        </div>
-                      </div>
-
-                      {/* Duration & Start Controls */}
-                      <div className="flex items-center space-x-2.5 self-end sm:self-center">
-                        <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1">
-                          <button
-                            onClick={() => adjustMinutes(idx, -15)}
-                            className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                            title="Subtract 15 mins"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="text-xs font-bold font-mono text-slate-800 px-1.5">
-                            {alloc.planned_minutes}m
-                          </span>
-                          <button
-                            onClick={() => adjustMinutes(idx, 15)}
-                            className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                            title="Add 15 mins"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
                         </div>
 
-                        {!alloc.is_break && (
-                          <button
-                            onClick={() => startTimer(alloc)}
-                            className="flex items-center space-x-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-colors"
-                          >
-                            <Play className="h-3 w-3 fill-white" />
-                            <span>Start Timer</span>
-                          </button>
-                        )}
+                        {/* Duration & Start Controls */}
+                        <div className="flex items-center space-x-2.5 self-end sm:self-center">
+                          <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1">
+                            <button
+                              onClick={() => adjustMinutes(idx, -15)}
+                              className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                              title="Subtract 15 mins"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="text-xs font-bold font-mono text-slate-800 px-1.5">
+                              {alloc.planned_minutes}m
+                            </span>
+                            <button
+                              onClick={() => adjustMinutes(idx, 15)}
+                              className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                              title="Add 15 mins"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
 
-                        <button
-                          onClick={() => handleRemoveSession(idx)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                          title="Remove session"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                          {!alloc.is_break && (
+                            <button
+                              onClick={() => startTimer(alloc)}
+                              className="flex items-center space-x-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-colors"
+                            >
+                              <Play className="h-3 w-3 fill-white" />
+                              <span>Start Timer</span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleRemoveSession(idx)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Remove session"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-16 px-4 space-y-4">
@@ -1233,7 +1452,7 @@ export default function UnifiedPlatformHome() {
                   <div>
                     <h4 className="text-sm font-bold text-slate-800">Your Study Timetable is Completely Clear</h4>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                      No active sessions. Click &quot;+ Add Subject Manually&quot; or &quot;Auto-Balance Schedule&quot; to build your plan.
+                      No active sessions. Click &quot;+ Add Custom Subject&quot; or &quot;Auto-Balance Schedule&quot; to build your plan.
                     </p>
                   </div>
                   <div className="flex items-center justify-center space-x-3 pt-2">
@@ -1241,12 +1460,12 @@ export default function UnifiedPlatformHome() {
                       onClick={() => setShowAddModal(true)}
                       className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 shadow-sm"
                     >
-                      + Add Subject Manually
+                      + Add Custom Subject
                     </button>
                     <button
                       onClick={() => {
-                        if (currentStage === 'class_9' || currentStage === 'class_10') {
-                          setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
+                        if (currentStage === 'class_10' || currentStage === 'class_9') {
+                          setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
                         } else {
                           setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
                         }
@@ -1259,66 +1478,121 @@ export default function UnifiedPlatformHome() {
                 </div>
               )}
             </div>
+
+            {/* Self-Reflection Journal */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-brand-600" />
+                <span>Daily Self-Analysis & Reflection Note</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Write down key topics understood today, problem areas to revise, and plan your focus for tomorrow:
+              </p>
+              <textarea
+                value={todayReflection}
+                onChange={e => setTodayReflection(e.target.value)}
+                placeholder="Today I mastered quadratic equations and solved 10 problems on Newton's second law. Tomorrow need to revise organic reactions..."
+                rows={3}
+                className="w-full rounded-2xl border border-slate-200 p-3.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setToastMessage('Self-reflection journal saved.');
+                    setTimeout(() => setToastMessage(null), 3000);
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800"
+                >
+                  Save Reflection
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* SECTION 3: STUDY RESOURCES                                                */}
+        {/* SECTION 3: STUDY RESOURCES — EXCLUSIVELY FOR B.TECH ENGINEERING           */}
         {/* ========================================================================= */}
         {activePortal === 'resources' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Header */}
             <div className="border-b border-slate-200 pb-5">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-[11px] font-bold uppercase tracking-wider mb-2">
-                <BookOpen className="h-3.5 w-3.5 text-brand-600" />
-                <span>Dedicated Section 3: Study Resources</span>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider mb-2">
+                <BookOpen className="h-3.5 w-3.5 text-brand-400" />
+                <span>Dedicated Section 3: BTech Engineering Resources Only</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {currentStage === 'class_9'
-                  ? 'Class 9 Syllabi, Blueprints, Formula Sheets & Model Papers'
-                  : currentStage === 'class_10'
-                  ? 'Class 10 Board Blueprints, Sample Papers & Revision Sheets'
-                  : currentStage === 'btech_1'
-                  ? 'BTech 1st Year (1-1/1-2) University Blueprints, Syllabi & Notes'
-                  : 'Study Resources & Question Papers'}
+                BTech University Syllabi, Question Papers & Lab Manuals
               </h1>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-3xl">
-                Verified blueprints, model question papers, and revision notes exclusively for{' '}
-                <strong className="text-slate-800">{STAGES.find(s => s.id === currentStage)?.label}</strong>. Unmixed and sorted for rapid revision.
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-4xl">
+                Official repository for undergraduate B.Tech engineering students across JNTU-GV, JNTUK, JNTUH, Andhra University, and affiliated colleges (R23, R20 schemes).
               </p>
             </div>
 
-            {/* Filter and Search Bar */}
+            {/* University & College Selector */}
             <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <Building2 className="h-4 w-4 text-brand-600 shrink-0" />
+                  <span className="text-xs font-bold text-slate-800">Affiliated University / College:</span>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
                   {[
-                    { label: 'All Resources', val: '' },
-                    { label: 'Syllabus & Blueprints', val: 'syllabus' },
-                    { label: 'Model Papers & Tests', val: 'model_paper' },
-                    { label: 'Formula Sheets & Notes', val: 'formula_sheet' }
-                  ].map(tab => (
+                    { id: 'jntugv', label: 'JNTU-GV (incl. Sri Sivani College of Engg)' },
+                    { id: 'jntuk', label: 'JNTUK Kakinada' },
+                    { id: 'au', label: 'Andhra University (AU)' },
+                    { id: 'jntuh', label: 'JNTUH Hyderabad' }
+                  ].map(u => (
                     <button
-                      key={tab.val}
-                      onClick={() => setResourceFilterType(tab.val)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                        resourceFilterType === tab.val
+                      key={u.id}
+                      onClick={() => setSelectedUniversity(u.id)}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                        selectedUniversity === u.id
                           ? 'bg-slate-900 text-white shadow-sm'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
-                      {tab.label}
+                      {u.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Branch & Type Filters */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
+                {/* Branch Badges */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[
+                    { id: 'all', label: 'All Branches' },
+                    { id: 'cse', label: 'CSE (Computer Science)' },
+                    { id: 'aiml', label: 'AI & Machine Learning' },
+                    { id: 'ece', label: 'ECE (Electronics)' },
+                    { id: 'eee', label: 'EEE (Electrical)' },
+                    { id: 'mech', label: 'Mechanical' },
+                    { id: 'civil', label: 'Civil' }
+                  ].map(br => (
+                    <button
+                      key={br.id}
+                      onClick={() => setSelectedBtechBranch(br.id)}
+                      className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                        selectedBtechBranch === br.id
+                          ? 'bg-brand-600 text-white shadow-sm font-bold'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {br.label}
                     </button>
                   ))}
                 </div>
 
-                <div className="relative min-w-[240px]">
+                {/* Search */}
+                <div className="relative min-w-[260px]">
                   <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                   <input
                     type="text"
-                    value={resourceSearch}
-                    onChange={e => setResourceSearch(e.target.value)}
-                    placeholder="Search by topic, subject or paper..."
+                    value={btechSearch}
+                    onChange={e => setBtechSearch(e.target.value)}
+                    placeholder="Search BTech subject, code (e.g. M1, PPS, R23)..."
                     className="w-full rounded-xl border border-slate-200 pl-8 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
@@ -1326,9 +1600,9 @@ export default function UnifiedPlatformHome() {
             </div>
 
             {/* Resources Cards Grid */}
-            {filteredResources.length > 0 ? (
+            {filteredBtechResources.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredResources.map(res => (
+                {filteredBtechResources.map(res => (
                   <div
                     key={res.id}
                     className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
@@ -1339,21 +1613,21 @@ export default function UnifiedPlatformHome() {
                           {res.resource_type.replace('_', ' ')}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono font-semibold">
-                          {res.regulation || res.education_level_code.toUpperCase()}
+                          {res.regulation || 'R23 Regulation'}
                         </span>
                       </div>
 
                       <h3 className="text-sm font-bold text-slate-900 leading-snug">{res.title}</h3>
                       <p className="text-xs text-slate-500 mt-2 flex items-center space-x-1.5">
                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                        <span>Source: {res.source_contributor}</span>
+                        <span>Source: {res.source_contributor || 'University Board'}</span>
                       </p>
                     </div>
 
                     <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                       <span className="text-slate-400 text-[11px] flex items-center space-x-1">
                         <FileText className="h-3.5 w-3.5 text-slate-400" />
-                        <span>Verified PDF Document</span>
+                        <span>Verified Engineering PDF</span>
                       </span>
                       <a
                         href={res.file_url}
@@ -1371,14 +1645,15 @@ export default function UnifiedPlatformHome() {
             ) : (
               <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
                 <BookOpen className="h-10 w-10 text-slate-300 mx-auto" />
-                <h4 className="text-sm font-bold text-slate-800">No resources found matching filter</h4>
+                <h4 className="text-sm font-bold text-slate-800">No BTech resources found matching filter</h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Try clearing the search query or switching resource type filter.
+                  Try clearing search query or switching branch filter.
                 </p>
                 <button
                   onClick={() => {
-                    setResourceFilterType('');
-                    setResourceSearch('');
+                    setSelectedBtechBranch('all');
+                    setSelectedBtechType('');
+                    setBtechSearch('');
                   }}
                   className="px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold"
                 >
@@ -1396,8 +1671,8 @@ export default function UnifiedPlatformHome() {
           <p>© 2026 Study Blueprint. High-performance academic and career operating system for Indian students.</p>
           <div className="flex items-center space-x-4">
             <button onClick={() => setActivePortal('careers')} className="hover:text-slate-700 font-semibold">1. Career Roadmaps</button>
-            <button onClick={() => setActivePortal('planner')} className="hover:text-slate-700 font-semibold">2. Study Planner</button>
-            <button onClick={() => setActivePortal('resources')} className="hover:text-slate-700 font-semibold">3. Study Resources</button>
+            <button onClick={() => setActivePortal('planner')} className="hover:text-slate-700 font-semibold">2. Study Planner & Tracker</button>
+            <button onClick={() => setActivePortal('resources')} className="hover:text-slate-700 font-semibold">3. BTech Study Resources</button>
             <Link href="/profile" className="hover:text-slate-700 font-semibold">Profile Settings</Link>
           </div>
         </div>

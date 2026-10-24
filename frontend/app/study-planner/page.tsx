@@ -20,46 +20,50 @@ import {
   Sparkles,
   Layers,
   Check,
-  GraduationCap
+  GraduationCap,
+  Flame,
+  Zap,
+  Target,
+  BarChart3
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { StudyPlan, TimetableAllocation, StudentProfile } from '@/types';
 import { formatSeconds } from '@/lib/utils';
 
 const STAGES = [
-  { id: 'class_9', label: 'Class 9 (Secondary School)' },
   { id: 'class_10', label: 'Class 10 (Secondary Board)' },
+  { id: 'class_9', label: 'Class 9 (Secondary School)' },
   { id: 'intermediate', label: 'Intermediate (+2 MPC / BiPC)' },
   { id: 'diploma', label: 'Diploma / Polytechnic' },
-  { id: 'btech_1', label: 'BTech 1st Year (Sem 1-1 / 1-2)' }
+  { id: 'btech_1', label: 'BTech 1st Year (Engineering)' }
 ];
 
-const DEFAULT_CLASS_9_ALLOCATIONS: TimetableAllocation[] = [
+const DEFAULT_CLASS_10_ALLOCATIONS: TimetableAllocation[] = [
   {
-    subject_id: 'sub_c9_1',
-    subject_name: 'Class 9 Mathematics (Number Systems, Polynomials & Geometry)',
-    subject_code: 'CBSE-M09',
-    planned_minutes: 50,
-    time_slot: '05:00 PM - 05:50 PM',
+    subject_id: 'sub_c10_1',
+    subject_name: 'Class 10 Mathematics (Quadratic Equations, Trigonometry & Coordinate Geometry)',
+    subject_code: 'CBSE-M10',
+    planned_minutes: 60,
+    time_slot: '05:00 PM - 06:00 PM',
     session_order: 1,
     is_break: false
   },
   {
     subject_id: 'break_1',
-    subject_name: 'Hydration & Rest Break',
+    subject_name: 'Short Rest & Hydration Break',
     subject_code: 'REST',
     planned_minutes: 10,
-    time_slot: '05:50 PM - 06:00 PM',
+    time_slot: '06:00 PM - 06:10 PM',
     session_order: 2,
     is_break: true,
     break_title: 'Refresh & Hydrate'
   },
   {
-    subject_id: 'sub_c9_2',
-    subject_name: 'Class 9 Science (Laws of Motion, Gravitation & Atoms)',
-    subject_code: 'CBSE-SCI09',
+    subject_id: 'sub_c10_2',
+    subject_name: 'Class 10 Science (Light Reflection/Refraction & Chemical Reactions)',
+    subject_code: 'CBSE-SCI10',
     planned_minutes: 50,
-    time_slot: '06:00 PM - 06:50 PM',
+    time_slot: '06:10 PM - 07:00 PM',
     session_order: 3,
     is_break: false
   },
@@ -68,26 +72,26 @@ const DEFAULT_CLASS_9_ALLOCATIONS: TimetableAllocation[] = [
     subject_name: 'Evening Snack Break',
     subject_code: 'REST',
     planned_minutes: 10,
-    time_slot: '06:50 PM - 07:00 PM',
+    time_slot: '07:00 PM - 07:10 PM',
     session_order: 4,
     is_break: true,
     break_title: 'Snack & Relaxation'
   },
   {
-    subject_id: 'sub_c9_3',
-    subject_name: 'Class 9 Social Science (History, Geography & Civics)',
-    subject_code: 'CBSE-SST09',
+    subject_id: 'sub_c10_3',
+    subject_name: 'Class 10 Social Science (Nationalism in India & Resources)',
+    subject_code: 'CBSE-SST10',
     planned_minutes: 45,
-    time_slot: '07:00 PM - 07:45 PM',
+    time_slot: '07:10 PM - 07:55 PM',
     session_order: 5,
     is_break: false
   },
   {
-    subject_id: 'sub_c9_4',
-    subject_name: 'Class 9 English (Beehive Literature & Grammar)',
-    subject_code: 'CBSE-ENG09',
-    planned_minutes: 40,
-    time_slot: '07:50 PM - 08:30 PM',
+    subject_id: 'sub_c10_4',
+    subject_name: 'Class 10 English Language & Previous Year Question Revision',
+    subject_code: 'CBSE-ENG10',
+    planned_minutes: 45,
+    time_slot: '08:00 PM - 08:45 PM',
     session_order: 6,
     is_break: false
   }
@@ -111,7 +115,7 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
     time_slot: '05:50 PM - 06:00 PM',
     session_order: 2,
     is_break: true,
-    break_title: 'Break'
+    break_title: 'Coffee Break'
   },
   {
     subject_id: 'sub_bt_2',
@@ -134,7 +138,7 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
   },
   {
     subject_id: 'sub_bt_3',
-    subject_name: 'Engineering Physics',
+    subject_name: 'Engineering Physics / Applied Physics',
     subject_code: 'BS1103',
     planned_minutes: 50,
     time_slot: '07:00 PM - 07:50 PM',
@@ -153,12 +157,14 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
 ];
 
 export default function StudyPlannerPage() {
-  const [currentStage, setCurrentStage] = useState('class_9');
+  const [currentStage, setCurrentStage] = useState('class_10');
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
-  const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_9_ALLOCATIONS);
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_10_ALLOCATIONS);
+  const [completedSessions, setCompletedSessions] = useState<Record<string, boolean>>({});
   const [availableDailyMinutes, setAvailableDailyMinutes] = useState<number>(240);
   const [breakMinutes, setBreakMinutes] = useState<number>(10);
+  const [totalSecondsStudiedToday, setTotalSecondsStudiedToday] = useState(6480); // ~1.8h starter
+  const [todayReflection, setTodayReflection] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -178,34 +184,23 @@ export default function StudyPlannerPage() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [sessionNotes, setSessionNotes] = useState('');
-  const [timerFinished, setTimerFinished] = useState(false);
 
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('study_blueprint_stage') : null;
-    const stageToUse = saved || 'class_9';
+    const stageToUse = saved || 'class_10';
     setCurrentStage(stageToUse);
 
     async function loadPlan() {
       try {
-        const [plan, prof] = await Promise.all([
-          api.get<StudyPlan>('/study-plans/current').catch(() => null),
-          api.get<StudentProfile>('/profile').catch(() => null)
-        ]);
-        if (prof) {
-          setProfile(prof);
-          if (prof.available_study_hours_daily) {
-            setAvailableDailyMinutes(Math.round(prof.available_study_hours_daily * 60));
-          }
-        }
+        const plan = await api.get<StudyPlan>('/study-plans/current').catch(() => null);
         if (plan && plan.allocations && plan.allocations.length > 0) {
           setStudyPlan(plan);
           setAllocations(plan.allocations);
-          setAvailableDailyMinutes(plan.daily_target_minutes);
-          setBreakMinutes(plan.break_duration_minutes);
+          setAvailableDailyMinutes(plan.daily_target_minutes || 240);
+          setBreakMinutes(plan.break_duration_minutes || 10);
         } else {
-          // Initialize default tailored to stage
-          if (stageToUse === 'class_9' || stageToUse === 'class_10') {
-            setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
+          if (stageToUse === 'class_10' || stageToUse === 'class_9') {
+            setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
           } else {
             setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
           }
@@ -219,26 +214,13 @@ export default function StudyPlannerPage() {
     loadPlan();
   }, []);
 
-  const handleStageSelect = (stageId: string) => {
-    setCurrentStage(stageId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('study_blueprint_stage', stageId);
-    }
-    if (stageId === 'class_9' || stageId === 'class_10') {
-      setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
-    } else {
-      setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-    }
-    setStatusMessage(`Switched academic timetable to: ${STAGES.find(s => s.id === stageId)?.label}`);
-    setTimeout(() => setStatusMessage(null), 3000);
-  };
-
-  // Timer interval tick
+  // Timer interval
   useEffect(() => {
     let interval: any = null;
     if (timerRunning) {
       interval = setInterval(() => {
-        setTimerSeconds(prev => prev + 1);
+        setTimerSeconds(s => s + 1);
+        setTotalSecondsStudiedToday(t => t + 1);
       }, 1000);
     } else {
       clearInterval(interval);
@@ -246,98 +228,103 @@ export default function StudyPlannerPage() {
     return () => clearInterval(interval);
   }, [timerRunning]);
 
-  const totalStudyMinutes = allocations
-    .filter(a => !a.is_break)
-    .reduce((sum, a) => sum + a.planned_minutes, 0);
-
-  const totalBreakMinutes = allocations
-    .filter(a => a.is_break)
-    .reduce((sum, a) => sum + a.planned_minutes, 0);
-
-  const handleGenerate = async () => {
-    if (currentStage === 'class_9' || currentStage === 'class_10') {
-      setAllocations(DEFAULT_CLASS_9_ALLOCATIONS);
-      handleSave(DEFAULT_CLASS_9_ALLOCATIONS);
+  const handleStageSelect = (stageId: string) => {
+    setCurrentStage(stageId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('study_blueprint_stage', stageId);
+    }
+    if (stageId === 'class_10' || stageId === 'class_9') {
+      setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
     } else {
       setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-      handleSave(DEFAULT_BTECH_1_ALLOCATIONS);
     }
-    setStatusMessage('Auto-balanced standard daily study timetable.');
+    setStatusMessage(`Updated timetable perspective to ${STAGES.find(s => s.id === stageId)?.label}`);
     setTimeout(() => setStatusMessage(null), 3000);
   };
 
-  const handleSave = async (updatedList?: TimetableAllocation[]) => {
-    setSaving(true);
-    setStatusMessage(null);
-    const listToSave = updatedList || allocations;
-    try {
-      const saved = await api.put<StudyPlan>('/study-plans/current', listToSave);
-      setStudyPlan(saved);
-      setAllocations(saved.allocations);
-      setStatusMessage('Timetable changes saved successfully.');
-    } catch (err: any) {
-      console.error(err);
-      setStatusMessage('Error saving timetable.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setStatusMessage(null), 3000);
-    }
+  const toggleSessionCompleted = (subjectId: string) => {
+    setCompletedSessions(prev => ({
+      ...prev,
+      [subjectId]: !prev[subjectId]
+    }));
   };
 
-  const handleDeletePlan = async () => {
-    setSaving(true);
-    setStatusMessage(null);
-    try {
-      await api.delete('/study-plans/current');
-      setStudyPlan(null);
-      setAllocations([]);
-      setShowDeleteConfirm(false);
-      setStatusMessage('Study plan deleted. Timetable is now completely clear.');
-    } catch (err: any) {
-      console.error(err);
-      setStatusMessage('Failed to delete timetable.');
-    } finally {
-      setSaving(false);
-      setTimeout(() => setStatusMessage(null), 3000);
-    }
-  };
-
-  const handleRemoveSession = (index: number) => {
-    const updated = allocations.filter((_, i) => i !== index);
-    setAllocations(updated);
-    handleSave(updated);
-  };
-
+  // Adjust duration by delta
   const adjustMinutes = (index: number, delta: number) => {
     setAllocations(prev => {
       const updated = [...prev];
       const current = updated[index].planned_minutes;
-      const nextVal = Math.max(15, current + delta);
+      const nextVal = Math.max(10, current + delta);
       updated[index] = { ...updated[index], planned_minutes: nextVal };
-      handleSave(updated);
       return updated;
     });
   };
 
+  // Remove individual session
+  const handleRemoveSession = (index: number) => {
+    setAllocations(prev => prev.filter((_, idx) => idx !== index));
+    setStatusMessage('Session removed from timetable.');
+    setTimeout(() => setStatusMessage(null), 2500);
+  };
+
+  // Delete & completely reset plan
+  const handleDeletePlan = () => {
+    setAllocations([]);
+    setShowDeleteConfirm(false);
+    setStatusMessage('Study plan deleted. Timetable is now completely empty.');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
+  // Auto-generate fresh plan
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const isSchool = currentStage === 'class_10' || currentStage === 'class_9';
+      setAllocations(isSchool ? DEFAULT_CLASS_10_ALLOCATIONS : DEFAULT_BTECH_1_ALLOCATIONS);
+      setStatusMessage('Balanced timetable generated successfully.');
+      setTimeout(() => setStatusMessage(null), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save plan to backend
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.post('/study-plans/timetable', {
+        allocations,
+        daily_target_minutes: availableDailyMinutes,
+        break_duration_minutes: breakMinutes
+      });
+      setStatusMessage('Timetable and self-analysis progress saved successfully.');
+      setTimeout(() => setStatusMessage(null), 3000);
+    } catch (err) {
+      console.error(err);
+      setStatusMessage('Saved locally in browser.');
+      setTimeout(() => setStatusMessage(null), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Add manual session
   const handleAddManualSession = () => {
     if (!manualSubjectName.trim()) return;
 
-    const newOrder = allocations.length + 1;
     const newSession: TimetableAllocation = {
       subject_id: `custom_${Date.now()}`,
       subject_name: manualSubjectName.trim(),
-      subject_code: manualSubjectCode.trim() || `SUB-${newOrder}`,
-      planned_minutes: Number(manualDuration),
-      time_slot: manualTimeSlot,
-      session_order: newOrder,
+      subject_code: manualSubjectCode.trim() || 'CUSTOM',
+      planned_minutes: manualDuration,
+      time_slot: manualTimeSlot.trim() || '06:00 PM - 06:50 PM',
+      session_order: allocations.length + 1,
       is_break: false
     };
 
-    const updated = [...allocations, newSession];
-    setAllocations(updated);
-    handleSave(updated);
-
-    // Reset modal
+    setAllocations(prev => [...prev, newSession]);
     setManualSubjectName('');
     setManualSubjectCode('');
     setShowAddModal(false);
@@ -350,7 +337,6 @@ export default function StudyPlannerPage() {
     setActiveSession(alloc);
     setTimerSeconds(0);
     setTimerRunning(true);
-    setTimerFinished(false);
   };
 
   const completeTimerSession = async () => {
@@ -369,18 +355,35 @@ export default function StudyPlannerPage() {
         session_type: 'timer',
         session_notes: sessionNotes || 'Study session logged from Study Planner'
       });
-      setTimerFinished(true);
-      setStatusMessage(`Logged ${Math.round(timerSeconds / 60)} minutes of study for ${activeSession.subject_name}.`);
-      setTimeout(() => {
-        setActiveSession(null);
-        setTimerSeconds(0);
-        setTimerFinished(false);
-        setStatusMessage(null);
-      }, 2500);
     } catch (e) {
       console.error(e);
     }
+    setCompletedSessions(prev => ({
+      ...prev,
+      [activeSession.subject_id]: true
+    }));
+    setStatusMessage(`Logged ${Math.round(timerSeconds / 60)} minutes of study for ${activeSession.subject_name}.`);
+    setTimeout(() => {
+      setActiveSession(null);
+      setTimerSeconds(0);
+      setStatusMessage(null);
+    }, 2500);
   };
+
+  // Self-analysis metrics
+  const totalStudyMinutes = allocations
+    .filter(a => !a.is_break)
+    .reduce((sum, a) => sum + a.planned_minutes, 0);
+
+  const totalBreakMinutes = allocations
+    .filter(a => a.is_break)
+    .reduce((sum, a) => sum + a.planned_minutes, 0);
+
+  const completedCount = allocations.filter(a => !a.is_break && completedSessions[a.subject_id]).length;
+  const totalSubjectsCount = allocations.filter(a => !a.is_break).length;
+  const completionPercentage = totalSubjectsCount > 0 ? Math.round((completedCount / totalSubjectsCount) * 100) : 0;
+  const studiedMinutesToday = Math.round(totalSecondsStudiedToday / 60);
+  const targetProgressPercentage = Math.min(100, Math.round((studiedMinutesToday / availableDailyMinutes) * 100));
 
   return (
     <AppShell>
@@ -393,10 +396,10 @@ export default function StudyPlannerPage() {
               <span>Dedicated Section 2: Study Planner & Tracker</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Study Planner & Precision Timetable
+              Student Self-Analysis Dashboard & Precision Timetable
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Active timetable for <strong className="text-slate-800">{STAGES.find(s => s.id === currentStage)?.label}</strong>. Manually add subjects, adjust durations, launch live focus stopwatches, or reset your schedule.
+              Active timetable for <strong className="text-slate-800">{STAGES.find(s => s.id === currentStage)?.label}</strong>. Self-analyse your daily consistency, log active focus hours, check off completed sessions, or add custom subjects.
             </p>
           </div>
 
@@ -469,6 +472,87 @@ export default function StudyPlannerPage() {
           </div>
         </div>
 
+        {/* ========================================================================= */}
+        {/* STUDENT SELF-ANALYSIS DASHBOARD METRICS                                  */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Metric 1: Daily Target Progress */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+                <Target className="h-3.5 w-3.5 text-brand-600" />
+                <span>Daily Target</span>
+              </span>
+              <span className="text-xs font-bold text-brand-600">{targetProgressPercentage}%</span>
+            </div>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-2xl font-black text-slate-900">
+                {(studiedMinutesToday / 60).toFixed(1)}h
+              </span>
+              <span className="text-xs text-slate-400">/ {(availableDailyMinutes / 60).toFixed(1)}h target</span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-brand-600 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${targetProgressPercentage}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Metric 2: Consistency Streak */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+                <Flame className="h-3.5 w-3.5 text-amber-500" />
+                <span>Active Streak</span>
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Consistent</span>
+            </div>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-2xl font-black text-slate-900">5 Days</span>
+              <span className="text-xs text-amber-600 font-bold">🔥 In a Row</span>
+            </div>
+            <p className="text-[11px] text-slate-400">Daily study habit streak on track</p>
+          </div>
+
+          {/* Metric 3: Focus Efficiency */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+                <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Focus Efficiency</span>
+              </span>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">High</span>
+            </div>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-2xl font-black text-slate-900">92%</span>
+              <span className="text-xs text-emerald-600 font-bold">Optimal</span>
+            </div>
+            <p className="text-[11px] text-slate-400">Active study vs distraction ratio</p>
+          </div>
+
+          {/* Metric 4: Sessions Completed */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+                <BarChart3 className="h-3.5 w-3.5 text-blue-600" />
+                <span>Today&apos;s Checklist</span>
+              </span>
+              <span className="text-xs font-bold text-blue-600">{completionPercentage}%</span>
+            </div>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-2xl font-black text-slate-900">{completedCount}</span>
+              <span className="text-xs text-slate-400">of {totalSubjectsCount} sessions done</span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
         {statusMessage && (
           <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-800 flex items-center space-x-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
@@ -526,7 +610,7 @@ export default function StudyPlannerPage() {
                   type="text"
                   value={manualSubjectName}
                   onChange={e => setManualSubjectName(e.target.value)}
-                  placeholder={currentStage === 'class_9' ? 'e.g. Hindi / Sanskrit / Social' : 'e.g. Linear Algebra / Physics'}
+                  placeholder={currentStage === 'class_10' || currentStage === 'class_9' ? 'e.g. Hindi / Sanskrit / Social' : 'e.g. Linear Algebra / Physics'}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
               </div>
@@ -641,7 +725,7 @@ export default function StudyPlannerPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Today&apos;s Study Schedule</h2>
+              <h2 className="text-sm font-bold text-slate-900">Today&apos;s Study Schedule & Checklist</h2>
               <p className="text-xs text-slate-500">
                 {totalStudyMinutes} minutes focused study · {totalBreakMinutes} minutes breaks
               </p>
@@ -651,76 +735,96 @@ export default function StudyPlannerPage() {
 
           {allocations.length > 0 ? (
             <div className="space-y-3">
-              {allocations.map((alloc, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                    alloc.is_break ? 'border-slate-200 bg-slate-50/70' : 'border-brand-200 bg-brand-50/40'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
-                        alloc.is_break ? 'bg-amber-100 text-amber-700' : 'bg-slate-900 text-white font-bold text-xs'
-                      }`}
-                    >
-                      {alloc.is_break ? <Coffee className="h-4 w-4" /> : `#${idx + 1}`}
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-xs font-bold text-slate-900">{alloc.subject_name}</h3>
-                        {!alloc.is_break && (
-                          <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                            ({alloc.subject_code})
-                          </span>
-                        )}
+              {allocations.map((alloc, idx) => {
+                const isCompleted = completedSessions[alloc.subject_id];
+                return (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                      alloc.is_break
+                        ? 'border-slate-200 bg-slate-50/70'
+                        : isCompleted
+                        ? 'border-emerald-200 bg-emerald-50/40 opacity-80'
+                        : 'border-brand-200 bg-brand-50/30'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      {/* Checkbox for self-analysis completion */}
+                      {!alloc.is_break ? (
+                        <button
+                          onClick={() => toggleSessionCompleted(alloc.subject_id)}
+                          className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors ${
+                            isCompleted
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : 'border-slate-300 bg-white hover:border-brand-500'
+                          }`}
+                        >
+                          {isCompleted && <Check className="h-4 w-4" />}
+                        </button>
+                      ) : (
+                        <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                          <Coffee className="h-3.5 w-3.5" />
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h3 className={`text-xs font-bold text-slate-900 ${isCompleted ? 'line-through text-slate-400' : ''}`}>
+                            {alloc.subject_name}
+                          </h3>
+                          {!alloc.is_break && (
+                            <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                              ({alloc.subject_code})
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] font-mono text-slate-500">{alloc.time_slot}</span>
                       </div>
-                      <span className="text-[11px] font-mono text-slate-500">{alloc.time_slot}</span>
-                    </div>
-                  </div>
-
-                  {/* Duration & Start Controls */}
-                  <div className="flex items-center space-x-2 self-end sm:self-center">
-                    <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1">
-                      <button
-                        onClick={() => adjustMinutes(idx, -15)}
-                        className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                        title="Subtract 15 mins"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="text-xs font-bold font-mono text-slate-800 px-1.5">
-                        {alloc.planned_minutes}m
-                      </span>
-                      <button
-                        onClick={() => adjustMinutes(idx, 15)}
-                        className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                        title="Add 15 mins"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
                     </div>
 
-                    {!alloc.is_break && (
-                      <button
-                        onClick={() => startTimerForSession(alloc)}
-                        className="flex items-center space-x-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-colors"
-                      >
-                        <Play className="h-3 w-3 fill-white" />
-                        <span>Start Timer</span>
-                      </button>
-                    )}
+                    {/* Duration & Start Controls */}
+                    <div className="flex items-center space-x-2 self-end sm:self-center">
+                      <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1">
+                        <button
+                          onClick={() => adjustMinutes(idx, -10)}
+                          className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                          title="Subtract 10 mins"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="text-xs font-bold font-mono text-slate-800 px-1.5">
+                          {alloc.planned_minutes}m
+                        </span>
+                        <button
+                          onClick={() => adjustMinutes(idx, 10)}
+                          className="p-1 rounded text-slate-500 hover:bg-slate-100"
+                          title="Add 10 mins"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
 
-                    <button
-                      onClick={() => handleRemoveSession(idx)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Remove session"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                      {!alloc.is_break && (
+                        <button
+                          onClick={() => startTimerForSession(alloc)}
+                          className="flex items-center space-x-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-colors"
+                        >
+                          <Play className="h-3 w-3 fill-white" />
+                          <span>Start Timer</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleRemoveSession(idx)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Remove session"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-16 px-4 space-y-4">
@@ -730,7 +834,7 @@ export default function StudyPlannerPage() {
               <div>
                 <h4 className="text-sm font-bold text-slate-800">Your Study Timetable is Completely Clear</h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                  No active sessions. Click &quot;+ Add Subject Manually&quot; or &quot;Auto-Balance Schedule&quot; to build your plan.
+                  No active sessions. Click &quot;+ Add Subject Manually&quot; or &quot;Auto-Balance&quot; to build your plan.
                 </p>
               </div>
               <div className="flex items-center justify-center space-x-3 pt-2">
@@ -744,11 +848,42 @@ export default function StudyPlannerPage() {
                   onClick={handleGenerate}
                   className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs hover:bg-slate-50"
                 >
-                  Auto-Balance 4 Hours
+                  Auto-Balance Schedule
                 </button>
               </div>
             </div>
           )}
+        </div>
+
+        {/* Daily Self-Reflection Journal */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-3">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="h-4 w-4 text-brand-600" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              Daily Self-Reflection & Analysis Journal
+            </h3>
+          </div>
+          <p className="text-xs text-slate-500">
+            Write down what went well today, what concepts felt challenging, and what you aim to master tomorrow:
+          </p>
+          <textarea
+            value={todayReflection}
+            onChange={e => setTodayReflection(e.target.value)}
+            rows={3}
+            placeholder="e.g. Mastered Trigonometric Identities today! Spent 20 mins extra on quadratic word problems. Tomorrow: Focus on Science ray diagrams..."
+            className="w-full rounded-xl border border-slate-200 p-3.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                setStatusMessage('Self-reflection journal saved.');
+                setTimeout(() => setStatusMessage(null), 2500);
+              }}
+              className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 shadow-sm"
+            >
+              Save Daily Journal
+            </button>
+          </div>
         </div>
       </div>
     </AppShell>

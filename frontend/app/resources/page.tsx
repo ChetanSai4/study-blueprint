@@ -7,46 +7,32 @@ import {
   Search,
   Filter,
   Download,
-  Bookmark,
-  BookmarkCheck,
   ShieldCheck,
   FileText,
-  FileCheck2,
-  ExternalLink,
-  ChevronRight,
-  GraduationCap,
-  Check
+  Building2,
+  Cpu
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { EducationalResource } from '@/types';
 
-const STAGES = [
-  { id: 'class_9', label: 'Class 9 (Secondary School)', badge: 'NCERT / CBSE / State' },
-  { id: 'class_10', label: 'Class 10 (Secondary Board)', badge: 'Board Year' },
-  { id: 'intermediate', label: 'Intermediate (+2 MPC / BiPC)', badge: 'Junior College' },
-  { id: 'diploma', label: 'Diploma / Polytechnic', badge: 'Technical Diploma' },
-  { id: 'btech_1', label: 'BTech 1st Year (Sem 1-1 / 1-2)', badge: 'Engineering' }
-];
-
 export default function ResourcesPage() {
-  const [currentStage, setCurrentStage] = useState<string>('class_9');
   const [resources, setResources] = useState<EducationalResource[]>([]);
+  const [selectedUniversity, setSelectedUniversity] = useState<string>('jntugv');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Read stage from localStorage if set
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('study_blueprint_stage') : null;
-    if (saved) {
-      setCurrentStage(saved);
-    }
-
     async function loadResources() {
       try {
         const data = await api.get<EducationalResource[]>('/resources');
         if (data) {
-          setResources(data);
+          // Strictly filter BTech engineering resources only
+          const btechOnly = data.filter(
+            r => r.education_level_code === 'btech' || r.branch_code === 'cse' || r.branch_code === 'aiml' || r.regulation === 'R23'
+          );
+          setResources(btechOnly.length > 0 ? btechOnly : data);
         }
       } catch (err) {
         console.error('Resource fetch error', err);
@@ -57,29 +43,14 @@ export default function ResourcesPage() {
     loadResources();
   }, []);
 
-  const handleStageSelect = (stageId: string) => {
-    setCurrentStage(stageId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('study_blueprint_stage', stageId);
-    }
-  };
-
-  // Strictly filter resources by selected stage to prevent cross-module contamination
+  // Filter strictly for BTech
   const filteredResources = resources.filter(res => {
-    // Stage check
-    if (currentStage === 'class_9' || currentStage === 'class_10') {
-      const isSchool = res.education_level_code === 'school' || res.branch_code === 'class_9' || res.branch_code === 'class_10';
-      if (!isSchool) return false;
-    } else if (currentStage === 'btech_1') {
-      const isBtech = res.education_level_code === 'btech' || res.branch_code === 'cse' || res.branch_code === 'aiml';
-      if (!isBtech) return false;
-    } else if (currentStage === 'intermediate') {
-      const isInter = res.education_level_code === 'intermediate' || res.branch_code === 'mpc';
-      if (!isInter) return false;
-    } else if (currentStage === 'diploma') {
-      const isDiploma = res.education_level_code === 'diploma' || res.branch_code === 'cme';
-      if (!isDiploma) return false;
-    }
+    // Must be BTech / engineering
+    const isBtech = res.education_level_code === 'btech' || res.branch_code === 'cse' || res.branch_code === 'aiml' || res.regulation === 'R23';
+    if (!isBtech) return false;
+
+    // Branch filter
+    if (selectedBranch !== 'all' && res.branch_code !== selectedBranch) return false;
 
     // Type filter
     if (selectedType && res.resource_type !== selectedType) return false;
@@ -89,11 +60,10 @@ export default function ResourcesPage() {
       const q = searchQuery.toLowerCase();
       return (
         res.title.toLowerCase().includes(q) ||
-        res.education_level_code.toLowerCase().includes(q) ||
-        (res.subject_name && res.subject_name.toLowerCase().includes(q))
+        res.regulation?.toLowerCase().includes(q) ||
+        res.subject_name?.toLowerCase().includes(q)
       );
     }
-
     return true;
   });
 
@@ -102,68 +72,69 @@ export default function ResourcesPage() {
       <div className="space-y-6 max-w-6xl">
         {/* Header */}
         <div className="border-b border-slate-200 pb-5">
-          <div className="flex items-center space-x-2 text-brand-600 text-xs font-bold uppercase tracking-wider mb-1">
-            <BookOpen className="h-4 w-4" />
-            <span>Dedicated Section 3: Study Resources</span>
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider mb-2">
+            <BookOpen className="h-3.5 w-3.5 text-brand-400" />
+            <span>Dedicated Section 3: BTech Study Resources Only</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Academic Resources, Syllabi & Question Papers
+            BTech University Syllabi, Question Papers & Lab Manuals
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Official curriculum blueprints, verified formula sheets, and solved model examination papers categorized strictly by academic class.
+            Curated official academic repository exclusively for undergraduate B.Tech engineering students across JNTU-GV, JNTUK, JNTUH, Andhra University, and affiliated colleges (R23, R20 schemes).
           </p>
         </div>
 
-        {/* Academic Stage Selector */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="h-4 w-4 text-brand-600" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Filter by Your Academic Class / Level:
-            </h2>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {STAGES.map(stage => {
-              const isSelected = currentStage === stage.id;
-              return (
-                <button
-                  key={stage.id}
-                  onClick={() => handleStageSelect(stage.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 ${
-                    isSelected
-                      ? 'bg-slate-900 text-white shadow-sm ring-1 ring-slate-900'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  <span>{stage.label}</span>
-                  {isSelected && <Check className="h-3 w-3 text-brand-400" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Search & Resource Type Filter Bar */}
+        {/* University Selector */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center space-x-2">
+              <Building2 className="h-4 w-4 text-brand-600 shrink-0" />
+              <span className="text-xs font-bold text-slate-800">Affiliated University / College:</span>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
               {[
-                { label: 'All Resources', val: '' },
-                { label: 'Syllabus & Blueprints', val: 'syllabus' },
-                { label: 'Formula Sheets & Notes', val: 'formula_sheet' },
-                { label: 'Model Papers & Tests', val: 'model_paper' }
-              ].map(tab => (
+                { id: 'jntugv', label: 'JNTU-GV (incl. Sri Sivani College of Engg)' },
+                { id: 'jntuk', label: 'JNTUK Kakinada' },
+                { id: 'au', label: 'Andhra University (AU)' },
+                { id: 'jntuh', label: 'JNTUH Hyderabad' }
+              ].map(u => (
                 <button
-                  key={tab.val}
-                  onClick={() => setSelectedType(tab.val)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                    selectedType === tab.val
-                      ? 'bg-brand-600 text-white shadow-sm'
+                  key={u.id}
+                  onClick={() => setSelectedUniversity(u.id)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    selectedUniversity === u.id
+                      ? 'bg-slate-900 text-white shadow-sm'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  {tab.label}
+                  {u.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Branch & Type Filter Bar */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { id: 'all', label: 'All Branches' },
+                { id: 'cse', label: 'CSE (Computer Science)' },
+                { id: 'aiml', label: 'AI & Machine Learning' },
+                { id: 'ece', label: 'ECE (Electronics)' },
+                { id: 'eee', label: 'EEE (Electrical)' },
+                { id: 'mech', label: 'Mechanical' },
+                { id: 'civil', label: 'Civil' }
+              ].map(br => (
+                <button
+                  key={br.id}
+                  onClick={() => setSelectedBranch(br.id)}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
+                    selectedBranch === br.id
+                      ? 'bg-brand-600 text-white shadow-sm font-bold'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {br.label}
                 </button>
               ))}
             </div>
@@ -174,14 +145,14 @@ export default function ResourcesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search by topic, chapter or paper..."
+                placeholder="Search BTech subject, code (e.g. M1, PPS, R23)..."
                 className="w-full rounded-xl border border-slate-200 pl-8 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
         </div>
 
-        {/* Resources Grid */}
+        {/* Resources Cards Grid */}
         {filteredResources.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredResources.map(res => (
@@ -195,21 +166,21 @@ export default function ResourcesPage() {
                       {res.resource_type.replace('_', ' ')}
                     </span>
                     <span className="text-[11px] text-slate-400 font-mono font-semibold">
-                      {res.regulation || res.education_level_code.toUpperCase()}
+                      {res.regulation || 'R23 Regulation'}
                     </span>
                   </div>
 
                   <h3 className="text-sm font-bold text-slate-900 leading-snug">{res.title}</h3>
                   <p className="text-xs text-slate-500 mt-2 flex items-center space-x-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                    <span>Source: {res.source_contributor}</span>
+                    <span>Source: {res.source_contributor || 'University Board'}</span>
                   </p>
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                   <span className="text-slate-400 text-[11px] flex items-center space-x-1">
                     <FileText className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Verified PDF Document</span>
+                    <span>Verified Engineering PDF</span>
                   </span>
                   <a
                     href={res.file_url}
@@ -227,12 +198,13 @@ export default function ResourcesPage() {
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
             <BookOpen className="h-10 w-10 text-slate-300 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-800">No resources found matching filter</h4>
+            <h4 className="text-sm font-bold text-slate-800">No BTech resources found matching filter</h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Try switching your academic class or clearing the search query.
+              Try clearing the search query or switching branch filter.
             </p>
             <button
               onClick={() => {
+                setSelectedBranch('all');
                 setSelectedType('');
                 setSearchQuery('');
               }}
