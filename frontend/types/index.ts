@@ -115,7 +115,7 @@ export interface EducationalResource {
   verification_status: string;
   publication_status: string;
   download_count: number;
-  is_bookmarked: boolean;
+  is_bookmarked?: boolean;
   created_at?: string;
 }
 

@@ -160,7 +160,7 @@ class ResourceCreate(BaseModel):
     branch_code: Optional[str] = None
     semester: Optional[int] = None
     regulation: Optional[str] = None
-    subject_id: str
+    subject_id: Optional[str] = "general"
     unit_id: Optional[str] = None
     file_url: str
     file_size_bytes: int = 0
@@ -178,8 +178,9 @@ class ResourceResponse(BaseModel):
     branch_code: Optional[str] = None
     semester: Optional[int] = None
     regulation: Optional[str] = None
-    subject_id: str
+    subject_id: Optional[str] = "general"
     subject_name: Optional[str] = None
+
     unit_id: Optional[str] = None
     file_url: str
     file_size_bytes: int

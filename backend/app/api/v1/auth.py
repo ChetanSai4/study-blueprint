@@ -113,11 +113,11 @@ async def demo_login(payload: DemoAuthRequest, response: Response):
     email = payload.email.strip().lower() if payload.email else f"demo.student@studyblueprint.in" if role == "student" else "admin@studyblueprint.in"
     name = payload.display_name.strip() if payload.display_name else "Administrator" if role == "admin" else "BTech Student"
 
-    user = await db.users.find_one({"email": email})
+    unique_sub = f"google_sub_{email.replace('@', '_').replace('.', '_')}"
+    user = await db.users.find_one({"$or": [{"email": email}, {"google_sub": unique_sub}]})
     now = datetime.utcnow()
 
     if not user:
-        unique_sub = f"google_sub_{email.replace('@', '_').replace('.', '_')}"
         new_user = {
             "google_sub": unique_sub,
             "email": email,
@@ -129,11 +129,17 @@ async def demo_login(payload: DemoAuthRequest, response: Response):
             "updated_at": now,
             "last_login_at": now
         }
-        res = await db.users.insert_one(new_user)
-        new_user["_id"] = res.inserted_id
-        user = new_user
+        try:
+            res = await db.users.insert_one(new_user)
+            new_user["_id"] = res.inserted_id
+            user = new_user
+        except Exception:
+            user = await db.users.find_one({"$or": [{"email": email}, {"google_sub": unique_sub}]})
+            if user:
+                await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login_at": now, "display_name": name}})
     else:
         await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login_at": now, "display_name": name}})
+
 
     user_id = str(user["_id"])
     token = create_session_token(user_id=user_id, role=role)
