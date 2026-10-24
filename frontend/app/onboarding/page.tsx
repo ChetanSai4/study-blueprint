@@ -11,7 +11,10 @@ import {
   GraduationCap,
   Clock,
   Target,
-  Sparkles
+  Sparkles,
+  Building2,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { EducationLevel, BoardOrUniversity, Branch, Subject } from '@/types';
@@ -27,41 +30,60 @@ export default function OnboardingPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
+  // Custom subject input
+  const [customSubjectName, setCustomSubjectName] = useState('');
+  const [customSubjectCode, setCustomSubjectCode] = useState('');
+
   // Form State
   const [formData, setFormData] = useState({
-    displayName: 'Engineering Student',
+    displayName: 'BTech Student',
+    collegeName: 'Sri Sivani College of Engineering, Srikakulam',
     preferredLanguage: 'en',
     educationLevelCode: 'btech',
-    boardOrUniversityCode: 'jntuh',
+    boardOrUniversityCode: 'jntugv',
     branchCode: 'cse',
-    academicYear: 2,
+    academicYear: 1,
     semester: 1,
-    regulation: 'R22',
+    regulation: 'R23',
     enrolledSubjectIds: [] as string[],
+    customSubjects: [
+      { name: 'Linear Algebra & Calculus (M1)', code: '23BS1101' },
+      { name: 'Engineering Physics', code: '23BS1102' },
+      { name: 'Programming for Problem Solving using C', code: '23ES1101' },
+      { name: 'Basic Electrical & Electronics Engineering', code: '23ES1102' },
+      { name: 'Communicative English', code: '23HS1101' }
+    ],
     availableStudyHoursDaily: 4.0,
     preferredStudyTime: 'evening',
     breakDurationMinutes: 10,
     studyIntervalMinutes: 50,
-    goals: ['Complete syllabus with high conceptual clarity', 'Ace JNTUH Semester Examinations', 'Develop Placement-Ready Full Stack Skills']
+    goals: [
+      'Master university syllabus and score 8.5+ SGPA',
+      'Clear 1-1 semester examinations with zero backlogs',
+      'Build strong problem solving and programming skills'
+    ]
   });
 
   useEffect(() => {
     async function loadCatalog() {
       try {
-        const levels = await api.get<EducationLevel[]>('/catalog/education-levels');
-        setEducationLevels(levels);
-        const b = await api.get<BoardOrUniversity[]>('/catalog/boards-universities');
-        setBoards(b);
-        const br = await api.get<Branch[]>('/catalog/branches');
-        setBranches(br);
-        const subs = await api.get<Subject[]>('/catalog/subjects?education_level=btech&branch=cse');
-        setSubjects(subs);
-        // Default enrolled subjects
-        if (subs.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            enrolledSubjectIds: subs.slice(0, 4).map(s => s.id)
-          }));
+        const [levels, b, br, subs] = await Promise.all([
+          api.get<EducationLevel[]>('/catalog/education-levels').catch(() => []),
+          api.get<BoardOrUniversity[]>('/catalog/boards-universities').catch(() => []),
+          api.get<Branch[]>('/catalog/branches').catch(() => []),
+          api.get<Subject[]>('/catalog/subjects?education_level=btech&branch=cse').catch(() => [])
+        ]);
+        if (levels) setEducationLevels(levels);
+        if (b) setBoards(b);
+        if (br) setBranches(br);
+        if (subs) {
+          setSubjects(subs);
+          if (subs.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              enrolledSubjectIds: subs.slice(0, 4).map(s => s.id)
+            }));
+          }
         }
       } catch (err) {
         console.error('Catalog load error', err);
@@ -70,7 +92,6 @@ export default function OnboardingPage() {
     loadCatalog();
   }, []);
 
-  // Update subjects when level or branch changes
   const handleBranchChange = async (brCode: string) => {
     setFormData(prev => ({ ...prev, branchCode: brCode }));
     try {
@@ -82,17 +103,42 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleAddCustomSubject = () => {
+    if (!customSubjectName.trim()) return;
+    setFormData(prev => ({
+      ...prev,
+      customSubjects: [
+        ...prev.customSubjects,
+        {
+          name: customSubjectName.trim(),
+          code: customSubjectCode.trim() || `SUB${prev.customSubjects.length + 1}`
+        }
+      ]
+    }));
+    setCustomSubjectName('');
+    setCustomSubjectCode('');
+  };
+
+  const handleRemoveCustomSubject = (idx: number) => {
+    setFormData(prev => ({
+      ...prev,
+      customSubjects: prev.customSubjects.filter((_, i) => i !== idx)
+    }));
+  };
+
   const handleFinish = async () => {
     setLoading(true);
     try {
       await api.put('/profile', {
         education_level_code: formData.educationLevelCode,
         board_or_university_code: formData.boardOrUniversityCode,
+        college_name: formData.collegeName,
         branch_code: formData.branchCode,
         academic_year: formData.academicYear,
         semester: formData.semester,
         regulation: formData.regulation,
         enrolled_subject_ids: formData.enrolledSubjectIds,
+        custom_subjects: formData.customSubjects,
         available_study_hours_daily: formData.availableStudyHoursDaily,
         preferred_study_time: formData.preferredStudyTime,
         break_duration_minutes: formData.breakDurationMinutes,
@@ -130,7 +176,7 @@ export default function OnboardingPage() {
             <Compass className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Academic Blueprint Setup</h1>
-          <p className="text-xs text-slate-500 mt-1">Configure your curriculum, study hours, and examination priorities.</p>
+          <p className="text-xs text-slate-500 mt-1">Configure your university, affiliated college, subjects, and study schedule.</p>
         </div>
 
         {/* Step Indicator */}
@@ -138,10 +184,10 @@ export default function OnboardingPage() {
           <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
             <span>Step {step} of 5</span>
             <span>
-              {step === 1 && 'Basic Profile'}
+              {step === 1 && 'Basic Profile & College'}
               {step === 2 && 'Education Level'}
-              {step === 3 && 'Academic Details & Subjects'}
-              {step === 4 && 'Study Schedule & Breaks'}
+              {step === 3 && 'Affiliation, Semester & Subjects'}
+              {step === 4 && 'Study Schedule & Habits'}
               {step === 5 && 'Academic Goals'}
             </span>
           </div>
@@ -160,7 +206,7 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Welcome to Study Blueprint!</h2>
-                <p className="text-xs text-slate-500 mt-1">Let&apos;s personalize your academic workspace.</p>
+                <p className="text-xs text-slate-500 mt-1">Tell us your name and college to personalize your portal.</p>
               </div>
 
               <div>
@@ -169,8 +215,25 @@ export default function OnboardingPage() {
                   type="text"
                   value={formData.displayName}
                   onChange={e => setFormData({ ...formData, displayName: e.target.value })}
+                  placeholder="e.g. Chetan Sai"
                   className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Your College Name (Affiliated Institution)
+                </label>
+                <input
+                  type="text"
+                  value={formData.collegeName}
+                  onChange={e => setFormData({ ...formData, collegeName: e.target.value })}
+                  placeholder="e.g. Sri Sivani College of Engineering, Srikakulam"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  You can type your exact engineering, polytechnic, or intermediate college.
+                </p>
               </div>
 
               <div>
@@ -178,7 +241,7 @@ export default function OnboardingPage() {
                 <select
                   value={formData.preferredLanguage}
                   onChange={e => setFormData({ ...formData, preferredLanguage: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
                 >
                   <option value="en">English (Default)</option>
                   <option value="te">Telugu (తెలుగు)</option>
@@ -226,23 +289,34 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Academic Hierarchy & Enrolled Subjects</h2>
-                <p className="text-xs text-slate-500 mt-1">Select your board/university, branch, and semester.</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Select your university, semester (e.g. 1-1), and enter your subjects manually or from the catalog.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Board or University</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Affiliated University / Board</label>
                   <select
                     value={formData.boardOrUniversityCode}
                     onChange={e => setFormData({ ...formData, boardOrUniversityCode: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900 bg-white"
                   >
-                    {boards
-                      .filter(b => b.education_level_code === formData.educationLevelCode)
-                      .map(b => (
-                        <option key={b.code} value={b.code}>{b.short_name} — {b.name}</option>
-                      ))}
-                    <option value="jntuh">JNTUH — Jawaharlal Nehru Tech University</option>
+                    <option value="jntugv">JNTU-GV — Gurajada Vizianagaram</option>
+                    <option value="jntuk">JNTUK — Kakinada</option>
+                    <option value="jntuh">JNTUH — Hyderabad</option>
+                    <option value="jntua">JNTUA — Anantapur</option>
+                    <option value="au">Andhra University (AU) — Visakhapatnam</option>
+                    <option value="osmania">Osmania University (OU) — Hyderabad</option>
+                    <option value="vtu">VTU — Visvesvaraya Technological University</option>
+                    <option value="anna">Anna University — Chennai</option>
+                    <option value="aktu">AKTU — Dr. A.P.J. Abdul Kalam Technical University</option>
+                    <option value="sppu">SPPU — Savitribai Phule Pune University</option>
+                    <option value="autonomous">Autonomous / Deemed Engineering College</option>
+                    <option value="sbtet">SBTET — State Board of Technical Education</option>
+                    <option value="ts_bie">TS BIE — Intermediate</option>
+                    <option value="ap_bie">AP BIE — Intermediate</option>
+                    <option value="cbse">CBSE — Central Board</option>
                   </select>
                 </div>
 
@@ -251,15 +325,18 @@ export default function OnboardingPage() {
                   <select
                     value={formData.branchCode}
                     onChange={e => handleBranchChange(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900 bg-white"
                   >
-                    {branches
-                      .filter(br => br.education_level_code === formData.educationLevelCode)
-                      .map(br => (
-                        <option key={br.code} value={br.code}>{br.name} ({br.short_name})</option>
-                      ))}
                     <option value="cse">Computer Science & Engineering (CSE)</option>
                     <option value="aiml">AI & Machine Learning (AIML)</option>
+                    <option value="ds">Data Science (DS)</option>
+                    <option value="ece">Electronics & Communication (ECE)</option>
+                    <option value="eee">Electrical & Electronics (EEE)</option>
+                    <option value="mech">Mechanical Engineering (MECH)</option>
+                    <option value="civil">Civil Engineering (CIVIL)</option>
+                    <option value="it">Information Technology (IT)</option>
+                    <option value="cme">Diploma Computer Engineering (CME)</option>
+                    <option value="mpc">Intermediate MPC</option>
                   </select>
                 </div>
 
@@ -271,54 +348,88 @@ export default function OnboardingPage() {
                       const [y, s] = e.target.value.split('-').map(Number);
                       setFormData({ ...formData, academicYear: y, semester: s });
                     }}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900 bg-white"
                   >
-                    <option value="1-1">Year 1 - Semester 1 (1-1)</option>
-                    <option value="1-2">Year 1 - Semester 2 (1-2)</option>
-                    <option value="2-1">Year 2 - Semester 1 (2-1)</option>
-                    <option value="2-2">Year 2 - Semester 2 (2-2)</option>
-                    <option value="3-1">Year 3 - Semester 1 (3-1)</option>
-                    <option value="3-2">Year 3 - Semester 2 (3-2)</option>
-                    <option value="4-1">Year 4 - Semester 1 (4-1)</option>
-                    <option value="4-2">Year 4 - Semester 2 (4-2)</option>
+                    <option value="1-1">1st Year - 1st Semester (1-1)</option>
+                    <option value="1-2">1st Year - 2nd Semester (1-2)</option>
+                    <option value="2-1">2nd Year - 1st Semester (2-1)</option>
+                    <option value="2-2">2nd Year - 2nd Semester (2-2)</option>
+                    <option value="3-1">3rd Year - 1st Semester (3-1)</option>
+                    <option value="3-2">3rd Year - 2nd Semester (3-2)</option>
+                    <option value="4-1">4th Year - 1st Semester (4-1)</option>
+                    <option value="4-2">4th Year - 2nd Semester (4-2)</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">Regulation Scheme</label>
-                  <select
+                  <input
+                    type="text"
                     value={formData.regulation}
                     onChange={e => setFormData({ ...formData, regulation: e.target.value })}
+                    placeholder="e.g. R23, R20, R22"
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
-                  >
-                    <option value="R22">R22 (Current Regulation)</option>
-                    <option value="R18">R18 Regulation</option>
-                    <option value="CBCS">CBCS Scheme</option>
-                  </select>
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Select Your Enrolled Subjects</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
-                  {subjects.map(sub => {
-                    const isSelected = formData.enrolledSubjectIds.includes(sub.id);
-                    return (
-                      <div
-                        key={sub.id}
-                        onClick={() => toggleSubject(sub.id)}
-                        className={`p-3 rounded-lg border cursor-pointer flex items-center justify-between text-xs transition-colors ${
-                          isSelected ? 'border-brand-500 bg-brand-50/50' : 'border-slate-200 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-bold text-slate-900">{sub.name}</p>
-                          <span className="text-[10px] text-slate-500 font-mono">{sub.code}</span>
-                        </div>
-                        <CheckCircle2 className={`h-4 w-4 ${isSelected ? 'text-brand-600' : 'text-slate-300'}`} />
+              {/* Enter Custom Subjects */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-900">
+                    Your Semester Subjects (Add / Edit Any Subject)
+                  </label>
+                  <span className="text-[11px] text-brand-600 font-semibold">
+                    {formData.customSubjects.length} subjects added
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl border border-dashed border-brand-300 bg-brand-50/50 flex flex-col sm:flex-row items-center gap-2">
+                  <input
+                    type="text"
+                    value={customSubjectName}
+                    onChange={e => setCustomSubjectName(e.target.value)}
+                    placeholder="Subject name (e.g. Linear Algebra & Calculus)"
+                    className="w-full sm:flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-900 bg-white"
+                  />
+                  <input
+                    type="text"
+                    value={customSubjectCode}
+                    onChange={e => setCustomSubjectCode(e.target.value)}
+                    placeholder="Code (optional, e.g. 23BS1101)"
+                    className="w-full sm:w-40 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-900 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSubject}
+                    disabled={!customSubjectName.trim()}
+                    className="w-full sm:w-auto flex items-center justify-center space-x-1 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-500 disabled:opacity-50"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                {/* Display Custom Subjects List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {formData.customSubjects.map((sub, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 bg-slate-50 text-xs"
+                    >
+                      <div>
+                        <span className="font-bold text-slate-900">{sub.name}</span>
+                        {sub.code && <span className="ml-1.5 font-mono text-slate-400 text-[10px]">({sub.code})</span>}
                       </div>
-                    );
-                  })}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomSubject(idx)}
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -355,7 +466,7 @@ export default function OnboardingPage() {
                   <select
                     value={formData.studyIntervalMinutes}
                     onChange={e => setFormData({ ...formData, studyIntervalMinutes: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900 bg-white"
                   >
                     <option value={45}>45 Minutes Focus</option>
                     <option value={50}>50 Minutes (Recommended)</option>
@@ -368,7 +479,7 @@ export default function OnboardingPage() {
                   <select
                     value={formData.breakDurationMinutes}
                     onChange={e => setFormData({ ...formData, breakDurationMinutes: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-900 bg-white"
                   >
                     <option value={5}>5 Minutes Quick Break</option>
                     <option value={10}>10 Minutes (Standard)</option>

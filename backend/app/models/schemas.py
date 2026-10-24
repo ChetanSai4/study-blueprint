@@ -23,6 +23,12 @@ class GoogleAuthRequest(BaseModel):
 
 class DemoAuthRequest(BaseModel):
     role: str = "student" # 'student' or 'admin'
+    email: Optional[str] = None
+    display_name: Optional[str] = None
+
+class UserUpdateRequest(BaseModel):
+    display_name: Optional[str] = None
+    email: Optional[str] = None
 
 class AuthResponse(BaseModel):
     user: UserResponse
@@ -40,12 +46,14 @@ class ExamDateEntry(BaseModel):
 class StudentProfileBase(BaseModel):
     education_level_code: str
     board_or_university_code: Optional[str] = None
+    college_name: Optional[str] = None # e.g. Sri Sivani College of Engineering
     course_or_stream_code: Optional[str] = None
     branch_code: Optional[str] = None
     academic_year: Optional[int] = None
     semester: Optional[int] = None
     regulation: Optional[str] = None
     enrolled_subject_ids: List[str] = []
+    custom_subjects: List[Dict[str, Any]] = [] # [{ "name": "...", "code": "..." }]
     available_study_hours_daily: float = Field(default=4.0, ge=0.5, le=16.0)
     preferred_study_time: str = "evening"
     break_duration_minutes: int = Field(default=10, ge=5, le=60)
@@ -58,12 +66,14 @@ class StudentProfileBase(BaseModel):
 class StudentProfileUpdate(BaseModel):
     education_level_code: Optional[str] = None
     board_or_university_code: Optional[str] = None
+    college_name: Optional[str] = None
     course_or_stream_code: Optional[str] = None
     branch_code: Optional[str] = None
     academic_year: Optional[int] = None
     semester: Optional[int] = None
     regulation: Optional[str] = None
     enrolled_subject_ids: Optional[List[str]] = None
+    custom_subjects: Optional[List[Dict[str, Any]]] = None
     available_study_hours_daily: Optional[float] = None
     preferred_study_time: Optional[str] = None
     break_duration_minutes: Optional[int] = None
@@ -240,6 +250,7 @@ class GenerateTimetableRequest(BaseModel):
     break_duration_minutes: int = Field(default=10, ge=5, le=30)
     study_interval_minutes: int = Field(default=50, ge=25, le=120)
     subject_ids: Optional[List[str]] = None
+    custom_subjects: Optional[List[Dict[str, Any]]] = None # [{ "name": "...", "code": "..." }]
     subject_priorities: Optional[Dict[str, int]] = None # subject_id -> 1..5
 
 class StudyPlanResponse(BaseModel):

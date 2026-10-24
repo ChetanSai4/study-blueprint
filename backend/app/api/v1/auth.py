@@ -9,7 +9,7 @@ from app.core.security import (
     get_current_user
 )
 from app.database.mongodb import get_database, format_doc
-from app.models.schemas import GoogleAuthRequest, DemoAuthRequest, AuthResponse, UserResponse
+from app.models.schemas import GoogleAuthRequest, DemoAuthRequest, UserUpdateRequest, AuthResponse, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -106,12 +106,12 @@ async def google_sign_in(payload: GoogleAuthRequest, response: Response):
 @router.post("/demo-login", response_model=AuthResponse)
 async def demo_login(payload: DemoAuthRequest, response: Response):
     """
-    Evaluation helper for testing student and administrator roles seamlessly.
+    Allows signing in with custom name and email or standard role personas.
     """
     db = get_database()
     role = "admin" if payload.role == "admin" else "student"
-    email = f"demo.{role}@studyblueprint.in"
-    name = "Demo Administrator" if role == "admin" else "Demo Engineering Student"
+    email = payload.email.strip().lower() if payload.email else f"demo.student@studyblueprint.in" if role == "student" else "admin@studyblueprint.in"
+    name = payload.display_name.strip() if payload.display_name else "Administrator" if role == "admin" else "BTech Student"
 
     user = await db.users.find_one({"email": email})
     now = datetime.utcnow()
@@ -185,3 +185,33 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         created_at=current_user.get("created_at"),
         last_login_at=current_user.get("last_login_at")
     )
+
+@router.put("/user", response_model=UserResponse)
+async def update_user(payload: UserUpdateRequest, current_user: dict = Depends(get_current_user)):
+    db = get_database()
+    update_data = {}
+    if payload.display_name:
+        update_data["display_name"] = payload.display_name.strip()
+    if payload.email:
+        update_data["email"] = payload.email.strip().lower()
+
+    if update_data:
+        update_data["updated_at"] = datetime.utcnow()
+        await db.users.update_one({"_id": ObjectId(current_user["id"])}, {"$set": update_data})
+
+    updated_user = await db.users.find_one({"_id": ObjectId(current_user["id"])})
+    profile = await db.student_profiles.find_one({"user_id": current_user["id"]})
+    is_onboarded = bool(profile and profile.get("education_level_code"))
+
+    return UserResponse(
+        id=str(updated_user["_id"]),
+        email=updated_user["email"],
+        display_name=updated_user["display_name"],
+        avatar_url=updated_user.get("avatar_url"),
+        role=updated_user.get("role", "student"),
+        account_status=updated_user.get("account_status", "active"),
+        is_onboarded=is_onboarded,
+        created_at=updated_user.get("created_at"),
+        last_login_at=updated_user.get("last_login_at")
+    )
+

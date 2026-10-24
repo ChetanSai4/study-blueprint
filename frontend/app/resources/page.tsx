@@ -26,10 +26,10 @@ export default function ResourcesPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
   // Filters
-  const [selectedLevel, setSelectedLevel] = useState<string>('btech');
-  const [selectedBoard, setSelectedBoard] = useState<string>('jntuh');
-  const [selectedBranch, setSelectedBranch] = useState<string>('cse');
-  const [selectedSemester, setSelectedSemester] = useState<number | ''>(1);
+  const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [selectedBoard, setSelectedBoard] = useState<string>('');
+  const [selectedBranch, setSelectedBranch] = useState<string>('');
+  const [selectedSemester, setSelectedSemester] = useState<number | ''>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -140,6 +140,7 @@ export default function ResourcesPage() {
                 onChange={e => setSelectedLevel(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs font-medium text-slate-800"
               >
+                <option value="">All Education Levels</option>
                 {educationLevels.map(lvl => (
                   <option key={lvl.code} value={lvl.code}>{lvl.title}</option>
                 ))}

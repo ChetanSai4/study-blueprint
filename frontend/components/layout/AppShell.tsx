@@ -31,20 +31,29 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [collegeName, setCollegeName] = useState<string>('BTech Engineering');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadUser() {
       try {
-        const user = await api.get<UserType>('/auth/me');
-        setCurrentUser(user);
+        const [user, profile] = await Promise.all([
+          api.get<UserType>('/auth/me').catch(() => null),
+          api.get<any>('/profile').catch(() => null)
+        ]);
+        if (user) setCurrentUser(user);
+        if (profile?.college_name) {
+          setCollegeName(profile.college_name);
+        } else if (profile?.board_or_university_code) {
+          setCollegeName(profile.board_or_university_code.toUpperCase());
+        }
       } catch (err) {
-        // Fallback demo user if not signed in so students can explore without dead-ends
+        // Fallback demo user
         setCurrentUser({
           id: 'demo-student',
           email: 'student@studyblueprint.in',
-          display_name: 'Engineering Student',
+          display_name: 'BTech Student',
           role: 'student',
           account_status: 'active',
           is_onboarded: true
@@ -105,8 +114,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             {currentUser?.display_name ? currentUser.display_name.charAt(0) : 'S'}
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-semibold text-slate-900 truncate">{currentUser?.display_name || 'Student'}</p>
-            <p className="text-[10px] text-slate-500 capitalize">{currentUser?.role === 'admin' ? 'Administrator' : 'BTech CSE'}</p>
+            <p className="text-xs font-semibold text-slate-900 truncate">{currentUser?.display_name || 'BTech Student'}</p>
+            <p className="text-[10px] text-slate-500 truncate" title={collegeName}>{collegeName}</p>
           </div>
         </div>
 

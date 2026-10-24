@@ -15,12 +15,14 @@ export interface StudentProfile {
   user_id: string;
   education_level_code: string;
   board_or_university_code?: string;
+  college_name?: string;
   course_or_stream_code?: string;
   branch_code?: string;
   academic_year?: number;
   semester?: number;
   regulation?: string;
   enrolled_subject_ids: string[];
+  custom_subjects?: Array<{ name: string; code?: string; credits?: number; priority?: number }>;
   available_study_hours_daily: number;
   preferred_study_time: string;
   break_duration_minutes: number;

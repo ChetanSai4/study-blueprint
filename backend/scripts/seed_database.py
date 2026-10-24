@@ -33,11 +33,20 @@ async def seed_data(target_db=None):
 
     # 2. Boards and Universities
     boards_and_universities = [
-        {"code": "jntuh", "name": "Jawaharlal Nehru Technological University Hyderabad", "short_name": "JNTUH", "education_level_code": "btech", "state_or_national": "Telangana", "is_active": True},
+        {"code": "jntugv", "name": "JNTU Gurajada Vizianagaram (incl. Sri Sivani College of Engg)", "short_name": "JNTU-GV", "education_level_code": "btech", "state_or_national": "Andhra Pradesh", "is_active": True},
         {"code": "jntuk", "name": "Jawaharlal Nehru Technological University Kakinada", "short_name": "JNTUK", "education_level_code": "btech", "state_or_national": "Andhra Pradesh", "is_active": True},
+        {"code": "jntuh", "name": "Jawaharlal Nehru Technological University Hyderabad", "short_name": "JNTUH", "education_level_code": "btech", "state_or_national": "Telangana", "is_active": True},
+        {"code": "jntua", "name": "Jawaharlal Nehru Technological University Anantapur", "short_name": "JNTUA", "education_level_code": "btech", "state_or_national": "Andhra Pradesh", "is_active": True},
+        {"code": "au", "name": "Andhra University College of Engineering", "short_name": "AU", "education_level_code": "btech", "state_or_national": "Andhra Pradesh", "is_active": True},
         {"code": "osmania", "name": "Osmania University", "short_name": "OU", "education_level_code": "btech", "state_or_national": "Telangana", "is_active": True},
+        {"code": "vtu", "name": "Visvesvaraya Technological University", "short_name": "VTU", "education_level_code": "btech", "state_or_national": "Karnataka", "is_active": True},
+        {"code": "anna", "name": "Anna University", "short_name": "Anna Univ", "education_level_code": "btech", "state_or_national": "Tamil Nadu", "is_active": True},
+        {"code": "aktu", "name": "Dr. A.P.J. Abdul Kalam Technical University", "short_name": "AKTU", "education_level_code": "btech", "state_or_national": "Uttar Pradesh", "is_active": True},
+        {"code": "sppu", "name": "Savitribai Phule Pune University", "short_name": "SPPU", "education_level_code": "btech", "state_or_national": "Maharashtra", "is_active": True},
+        {"code": "autonomous_other", "name": "Autonomous Engineering College / Other Indian University", "short_name": "Autonomous/Other", "education_level_code": "btech", "state_or_national": "National", "is_active": True},
         {"code": "sbtet", "name": "State Board of Technical Education and Training", "short_name": "SBTET", "education_level_code": "diploma", "state_or_national": "Telangana/AP", "is_active": True},
         {"code": "ts_bie", "name": "Telangana State Board of Intermediate Education", "short_name": "TS BIE", "education_level_code": "intermediate", "state_or_national": "Telangana", "is_active": True},
+        {"code": "ap_bie", "name": "Andhra Pradesh Board of Intermediate Education", "short_name": "AP BIE", "education_level_code": "intermediate", "state_or_national": "Andhra Pradesh", "is_active": True},
         {"code": "cbse", "name": "Central Board of Secondary Education", "short_name": "CBSE", "education_level_code": "school", "state_or_national": "National", "is_active": True}
     ]
     for b in boards_and_universities:
@@ -48,7 +57,11 @@ async def seed_data(target_db=None):
     branches = [
         {"code": "cse", "name": "Computer Science & Engineering", "short_name": "CSE", "education_level_code": "btech", "description": "Core computing, data structures, algorithms, databases and systems"},
         {"code": "aiml", "name": "Artificial Intelligence & Machine Learning", "short_name": "AI/ML", "education_level_code": "btech", "description": "Intelligent systems, statistical learning, neural architectures"},
+        {"code": "ds", "name": "Data Science", "short_name": "DS", "education_level_code": "btech", "description": "Big data analytics, statistics, predictive data pipelines"},
         {"code": "ece", "name": "Electronics & Communication Engineering", "short_name": "ECE", "education_level_code": "btech", "description": "Semiconductors, signal processing, communication networks"},
+        {"code": "eee", "name": "Electrical & Electronics Engineering", "short_name": "EEE", "education_level_code": "btech", "description": "Power systems, circuits, machines, power electronics"},
+        {"code": "mech", "name": "Mechanical Engineering", "short_name": "MECH", "education_level_code": "btech", "description": "Thermodynamics, mechanics, CAD/CAM, manufacturing"},
+        {"code": "civil", "name": "Civil Engineering", "short_name": "CIVIL", "education_level_code": "btech", "description": "Structural engineering, surveying, hydrology, construction"},
         {"code": "cme", "name": "Diploma in Computer Engineering", "short_name": "CME", "education_level_code": "diploma", "description": "Polytechnic computer engineering curriculum"},
         {"code": "mpc", "name": "Mathematics, Physics, Chemistry", "short_name": "MPC", "education_level_code": "intermediate", "description": "Standard engineering entrance preparatory stream"},
         {"code": "class_10", "name": "Secondary Class 10", "short_name": "Class 10", "education_level_code": "school", "description": "Board examination class"}
@@ -59,6 +72,83 @@ async def seed_data(target_db=None):
 
     # 4. Subjects
     subjects = [
+        # 1st Year (Semester 1-1) - JNTUGV / JNTUK / JNTUH
+        {
+            "code": "BS1101",
+            "name": "Linear Algebra & Calculus (Mathematics-I)",
+            "short_name": "M1",
+            "education_level_code": "btech",
+            "board_or_university_code": "jntugv",
+            "branch_code": "cse",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "R23",
+            "credits": 4,
+            "description": "Matrices, Rank, System of Linear Equations, Eigenvalues & Eigenvectors, Cayley-Hamilton, Mean Value Theorems, Multivariable Calculus.",
+            "icon_name": "Sigma",
+            "is_active": True
+        },
+        {
+            "code": "ES1102",
+            "name": "Programming for Problem Solving using C (PPS)",
+            "short_name": "PPS",
+            "education_level_code": "btech",
+            "board_or_university_code": "jntugv",
+            "branch_code": "cse",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "R23",
+            "credits": 3,
+            "description": "Introduction to Programming, C syntax, Control Structures, Arrays, Strings, Functions, Recursion, Pointers, Structures and File Handling.",
+            "icon_name": "Code",
+            "is_active": True
+        },
+        {
+            "code": "BS1103",
+            "name": "Applied Physics / Engineering Physics",
+            "short_name": "Physics",
+            "education_level_code": "btech",
+            "board_or_university_code": "jntugv",
+            "branch_code": "cse",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "R23",
+            "credits": 3,
+            "description": "Wave Optics, Interference, Diffraction, Lasers, Fiber Optics, Quantum Mechanics, Free Electron Theory, Semiconductors.",
+            "icon_name": "Zap",
+            "is_active": True
+        },
+        {
+            "code": "ES1104",
+            "name": "Basic Electrical & Electronics Engineering (BEEE)",
+            "short_name": "BEEE",
+            "education_level_code": "btech",
+            "board_or_university_code": "jntugv",
+            "branch_code": "cse",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "R23",
+            "credits": 3,
+            "description": "DC & AC Circuits, Kirchhoff's Laws, Network Theorems, Magnetic Circuits, Transformers, Diodes, BJT, Rectifiers.",
+            "icon_name": "Cpu",
+            "is_active": True
+        },
+        {
+            "code": "HS1105",
+            "name": "Communicative English",
+            "short_name": "English",
+            "education_level_code": "btech",
+            "board_or_university_code": "jntugv",
+            "branch_code": "cse",
+            "academic_year": 1,
+            "semester": 1,
+            "regulation": "R23",
+            "credits": 2,
+            "description": "Vocabulary, Reading Comprehension, Formal Writing, Technical Presentation, Grammar and Listening Skills.",
+            "icon_name": "BookOpen",
+            "is_active": True
+        },
+        # 2nd Year (Semester 2-1)
         {
             "code": "CS301PC",
             "name": "Data Structures",

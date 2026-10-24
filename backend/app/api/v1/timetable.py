@@ -89,6 +89,15 @@ async def generate_new_timetable(
             if s:
                 subjects.append(s)
 
+    if payload.custom_subjects:
+        for idx, cs in enumerate(payload.custom_subjects):
+            subjects.append({
+                "_id": f"custom_{idx}",
+                "id": f"custom_{idx}",
+                "name": cs.get("name", "Custom Subject"),
+                "code": cs.get("code", "SUB")
+            })
+
     if not subjects:
         cursor = db.subjects.find({"is_active": True}).limit(4)
         subjects = await cursor.to_list(length=4)
@@ -123,6 +132,16 @@ async def generate_new_timetable(
     plan_doc["_id"] = res.inserted_id
 
     return format_doc(plan_doc)
+
+@router.delete("/current")
+async def delete_current_plan(current_user: dict = Depends(get_current_user)):
+    """
+    Deletes / resets the current timetable so the student can create a fresh one.
+    """
+    db = get_database()
+    user_id = current_user["id"]
+    await db.study_plans.delete_many({"user_id": user_id})
+    return {"message": "Timetable plan deleted successfully."}
 
 @router.put("/current", response_model=StudyPlanResponse)
 async def save_custom_allocations(
