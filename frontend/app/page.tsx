@@ -1,2354 +1,1872 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import {
-  Compass,
-  Milestone,
-  Calendar,
-  BookOpen,
-  CheckCircle2,
-  Code2,
-  Layers,
-  GraduationCap,
-  Briefcase,
-  Play,
-  Pause,
-  Square,
-  Plus,
-  Minus,
-  Trash2,
-  RotateCcw,
-  Coffee,
-  Download,
-  Search,
-  Sparkles,
-  ChevronRight,
-  FolderGit2,
-  Award,
-  Clock,
-  User,
-  AlertCircle,
-  ArrowRight,
-  ShieldCheck,
-  Check,
-  HelpCircle,
-  FileText,
-  Activity,
-  Flame,
-  Target,
-  BarChart3,
-  TrendingUp,
-  Cpu,
-  Stethoscope,
-  Building2,
-  Wrench,
-  Shield,
-  Palette,
-  Laptop,
-  Scale,
   Zap,
+  Cpu,
+  Code2,
+  Wrench,
+  Building2,
+  Download,
   Eye,
+  ExternalLink,
+  Award,
+  Briefcase,
+  CheckCircle2,
+  Calendar,
+  Layers,
+  ChevronRight,
   Printer,
   X,
-  ExternalLink
+  FileText,
+  TrendingUp,
+  Target,
+  ArrowDown,
+  Workflow,
+  Sparkles,
+  ShieldCheck,
+  Compass,
+  Laptop,
+  Check,
+  Flame,
+  Activity,
+  Play,
+  Pause,
+  RotateCcw,
+  Plus,
+  Trash2,
+  Search,
+  BookOpen,
+  Filter,
+  School,
+  Timer,
+  Bell,
+  User,
+  MoreVertical,
+  Volume2,
+  Maximize2
 } from 'lucide-react';
-import { api } from '@/lib/api';
-import { DEFAULT_CAREER_ROLES } from '@/lib/careerRoles';
-import { DIPLOMA_BRANCH_DETAILS } from '@/lib/diplomaData';
-import { BTECH_DEMO_RESOURCES } from '@/lib/btechResources';
-import { BTechBranchRoadmapView } from '@/components/careers/BTechBranchRoadmapView';
+import { BTECH_BRANCH_ROADMAPS, BTechBranchRoadmap } from '@/lib/btechBranchRoadmaps';
 
-import { CareerRole, EducationalResource, TimetableAllocation, StudyPlan } from '@/types';
-import { formatSeconds } from '@/lib/utils';
+// Timetable type
+interface TimetableAllocation {
+  subject_id: string;
+  subject_name: string;
+  subject_code: string;
+  planned_minutes: number;
+  time_slot: string;
+  session_order: number;
+  is_break: boolean;
+  break_title?: string;
+}
 
-// Core Education Stages for Career Roadmap & Study Planner
-const STAGES = [
-  { id: 'class_10', label: 'Class 10 (Secondary Board)', badge: 'Board SSLC' },
-  { id: 'class_9', label: 'Class 9 (Secondary School)', badge: 'School Foundation' },
-  { id: 'intermediate', label: 'Intermediate (+2 MPC / BiPC)', badge: 'Junior College' },
-  { id: 'diploma', label: 'Diploma / Polytechnic', badge: 'Technical Diploma' },
-  { id: 'btech_1', label: 'BTech Engineering (EEE, CSE, ECE...)', badge: 'University BTech' }
-];
-
-// Pre-configured standard academic schedules
-const DEFAULT_CLASS_10_ALLOCATIONS: TimetableAllocation[] = [
+const DEFAULT_TIMETABLE: TimetableAllocation[] = [
   {
-    subject_id: 'sub_c10_1',
-    subject_name: 'Class 10 Mathematics (Quadratic Equations, Trigonometry & Coordinate Geometry)',
-    subject_code: 'CBSE-M10',
+    subject_id: 'sub_1',
+    subject_name: 'Electrical Circuit Analysis & Phasors (ECA)',
+    subject_code: 'R23-EEE-1102',
     planned_minutes: 60,
-    time_slot: '05:00 PM - 06:00 PM',
+    time_slot: '09:00 AM - 10:00 AM',
     session_order: 1,
     is_break: false
   },
   {
     subject_id: 'break_1',
-    subject_name: 'Short Rest & Hydration Break',
+    subject_name: 'Hydration & Posture Reset',
     subject_code: 'REST',
     planned_minutes: 10,
-    time_slot: '06:00 PM - 06:10 PM',
+    time_slot: '10:00 AM - 10:10 AM',
     session_order: 2,
     is_break: true,
-    break_title: 'Refresh & Hydrate'
+    break_title: 'Hydrate & Stretch'
   },
   {
-    subject_id: 'sub_c10_2',
-    subject_name: 'Class 10 Science (Light Reflection/Refraction & Chemical Reactions)',
-    subject_code: 'CBSE-SCI10',
+    subject_id: 'sub_2',
+    subject_name: 'Linear Algebra & Calculus (Mathematics-1)',
+    subject_code: 'R23-BS-1101',
     planned_minutes: 50,
-    time_slot: '06:10 PM - 07:00 PM',
+    time_slot: '10:10 AM - 11:00 AM',
     session_order: 3,
     is_break: false
   },
   {
-    subject_id: 'break_2',
-    subject_name: 'Evening Snack Break',
-    subject_code: 'REST',
-    planned_minutes: 10,
-    time_slot: '07:00 PM - 07:10 PM',
+    subject_id: 'sub_3',
+    subject_name: 'Programming in C & Data Problem Solving',
+    subject_code: 'R23-CS-1103',
+    planned_minutes: 60,
+    time_slot: '11:15 AM - 12:15 PM',
     session_order: 4,
-    is_break: true,
-    break_title: 'Snack & Relaxation'
-  },
-  {
-    subject_id: 'sub_c10_3',
-    subject_name: 'Class 10 Social Science (Nationalism in India & Resources)',
-    subject_code: 'CBSE-SST10',
-    planned_minutes: 45,
-    time_slot: '07:10 PM - 07:55 PM',
-    session_order: 5,
     is_break: false
   },
   {
-    subject_id: 'sub_c10_4',
-    subject_name: 'Class 10 English Language & Previous Year Question Revision',
-    subject_code: 'CBSE-ENG10',
-    planned_minutes: 45,
-    time_slot: '08:00 PM - 08:45 PM',
-    session_order: 6,
-    is_break: false
-  }
-];
-
-const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
-  {
-    subject_id: 'sub_bt_1',
-    subject_name: 'Linear Algebra & Calculus (Mathematics-I)',
-    subject_code: 'BS1101',
-    planned_minutes: 50,
-    time_slot: '05:00 PM - 05:50 PM',
-    session_order: 1,
-    is_break: false
-  },
-  {
-    subject_id: 'break_bt_1',
-    subject_name: 'Short Coffee Break',
-    subject_code: 'REST',
-    planned_minutes: 10,
-    time_slot: '05:50 PM - 06:00 PM',
-    session_order: 2,
-    is_break: true,
-    break_title: 'Coffee Break'
-  },
-  {
-    subject_id: 'sub_bt_2',
-    subject_name: 'Programming for Problem Solving using C (PPS)',
-    subject_code: 'ES1102',
-    planned_minutes: 50,
-    time_slot: '06:00 PM - 06:50 PM',
-    session_order: 3,
-    is_break: false
-  },
-  {
-    subject_id: 'break_bt_2',
-    subject_name: 'Rest Break',
-    subject_code: 'REST',
-    planned_minutes: 10,
-    time_slot: '06:50 PM - 07:00 PM',
-    session_order: 4,
-    is_break: true,
-    break_title: 'Break'
-  },
-  {
-    subject_id: 'sub_bt_3',
-    subject_name: 'Engineering Physics / Applied Physics',
-    subject_code: 'BS1103',
-    planned_minutes: 50,
-    time_slot: '07:00 PM - 07:50 PM',
-    session_order: 5,
-    is_break: false
-  },
-  {
-    subject_id: 'sub_bt_4',
-    subject_name: 'Basic Electrical & Electronics Engineering (BEEE)',
-    subject_code: 'ES1104',
+    subject_id: 'sub_4',
+    subject_name: 'Basic Electrical Engineering Lab Prep (BEE)',
+    subject_code: 'R23-EE-1104',
     planned_minutes: 40,
-    time_slot: '07:50 PM - 08:30 PM',
-    session_order: 6,
+    time_slot: '02:00 PM - 02:40 PM',
+    session_order: 5,
     is_break: false
   }
 ];
-
-// Complete mock & verified BTech catalog guaranteeing data across all branches & universities
-// BTECH_DEMO_RESOURCES is imported from @/lib/btechResources
 
 export default function UnifiedPlatformHome() {
-  // Active Section Tab: 'careers' | 'planner' | 'resources'
-  const [activePortal, setActivePortal] = useState<'careers' | 'planner' | 'resources'>('careers');
-  
-  // Selected Academic Stage (Defaults to Class 10)
-  const [currentStage, setCurrentStage] = useState<string>('intermediate');
+  // Navigation Tabs: 'careers' | 'planner' | 'resources' | 'focus'
+  const [activeTab, setActiveTab] = useState<'careers' | 'planner' | 'resources' | 'focus'>('careers');
 
-  // --- SECTION 1: CAREER ROADMAPS STATE ---
-  // Sub-tab for 10th class comprehensive pathways
-  const [active10thFlowTab, setActive10thFlowTab] = useState<'puc' | 'diploma' | 'paramedical' | 'iti' | 'defense' | 'short_courses'>('puc');
-  // Sub-tab for Intermediate streams
-  const [activeInterStreamTab, setActiveInterStreamTab] = useState<'mpc' | 'bipc' | 'mec' | 'arts'>('mpc');
-  // Sub-tab for Diploma branches
-  const [activeDiplomaBranch, setActiveDiplomaBranch] = useState<'cme' | 'ece' | 'eee' | 'mech' | 'civil' | 'auto'>('cme');
-  // Engineering Roles State (ONLY for B.Tech)
-  const [btechRoleBranchFilter, setBtechRoleBranchFilter] = useState<string>('all');
-  const [roles, setRoles] = useState<CareerRole[]>(DEFAULT_CAREER_ROLES);
-  const [selectedRole, setSelectedRole] = useState<CareerRole | null>(DEFAULT_CAREER_ROLES[0]);
+  // Selected Branch: default to 'eee' as requested by user
+  const [selectedBranch, setSelectedBranch] = useState<string>('eee');
 
-  // --- SECTION 2: STUDY PLANNER & SELF-ANALYSIS DASHBOARD STATE ---
-  const [allocations, setAllocations] = useState<TimetableAllocation[]>(DEFAULT_CLASS_10_ALLOCATIONS);
-  const [completedSessions, setCompletedSessions] = useState<Record<string, boolean>>({});
-  const [dailyMinutesTarget, setDailyMinutesTarget] = useState(240);
+  // View Mode inside Career Roadmaps
+  const [careerFlowMode, setCareerFlowMode] = useState<'architecture' | 'semesters' | 'placements'>('architecture');
+
+  // PDF Preview Modal
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [previewPdfTitle, setPreviewPdfTitle] = useState<string | null>(null);
+
+  // Timetable State
+  const [timetable, setTimetable] = useState<TimetableAllocation[]>(DEFAULT_TIMETABLE);
+  const [completedSessions, setCompletedSessions] = useState<Record<string, boolean>>({ sub_1: true });
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSubName, setNewSubName] = useState('');
   const [newSubCode, setNewSubCode] = useState('');
   const [newSubDuration, setNewSubDuration] = useState(50);
-  const [newSubTime, setNewSubTime] = useState('06:00 PM - 06:50 PM');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [todayReflection, setTodayReflection] = useState('');
-  
-  // Live Stopwatch State
-  const [activeTimerSession, setActiveTimerSession] = useState<TimetableAllocation | null>(null);
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [timerNotes, setTimerNotes] = useState('');
-  const [totalSecondsStudiedToday, setTotalSecondsStudiedToday] = useState(6480); // ~1.8h starter
+  const [newSubTime, setNewSubTime] = useState('03:00 PM - 03:50 PM');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // --- SECTION 3: B.TECH EXCLUSIVE STUDY RESOURCES STATE ---
-  const [resources, setResources] = useState<EducationalResource[]>(BTECH_DEMO_RESOURCES);
-  const [selectedBtechBranch, setSelectedBtechBranch] = useState<string>('all');
-  const [selectedBtechType, setSelectedBtechType] = useState<string>('');
-  const [btechSearch, setBtechSearch] = useState<string>('');
-  const [selectedUniversity, setSelectedUniversity] = useState<string>('jntugv');
-  const [selectedPreviewDoc, setSelectedPreviewDoc] = useState<EducationalResource | null>(null);
+  // Focus Stopwatch State
+  const [stopwatchSeconds, setStopwatchSeconds] = useState(1890); // 31:30
+  const [stopwatchRunning, setStopwatchRunning] = useState(false);
+  const [stopwatchMode, setStopwatchMode] = useState<'pomodoro' | 'deep' | 'custom'>('deep');
+  const [activeSessionName, setActiveSessionName] = useState('Electrical Circuit Analysis (ECA)');
+  const [reflectionText, setReflectionText] = useState('Today focus was concentrated on verifying Thevenin and Norton equivalence formulas before afternoon lab testing.');
 
-  // Initial Load (NO LOGIN REQUIRED)
-  useEffect(() => {
-    const savedStage = typeof window !== 'undefined' ? localStorage.getItem('study_blueprint_stage') : null;
-    const initialStage = savedStage || 'intermediate';
-    setCurrentStage(initialStage);
+  // Resources State
+  const [resourceUniversity, setResourceUniversity] = useState('jntugv');
+  const [resourceBranch, setResourceBranch] = useState('all');
+  const [resourceSearch, setResourceSearch] = useState('');
 
-    async function loadData() {
-      try {
-        const [rList, resList, plan] = await Promise.all([
-          api.get<CareerRole[]>('/careers/roles').catch(() => []),
-          api.get<EducationalResource[]>('/resources').catch(() => []),
-          api.get<StudyPlan>('/study-plans/current').catch(() => null)
-        ]);
-
-        if (rList && rList.length > 0) {
-          const btechRoles = rList.filter(r => r.role_code !== 'class9_foundation');
-          setRoles(btechRoles);
-          const btechRole = btechRoles.find(r => r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev');
-          setSelectedRole(btechRole || btechRoles[0]);
-        }
-
-        if (resList && resList.length > 0) {
-          const existingTitles = new Set(resList.map(r => r.title));
-          const combined = [...resList];
-          for (const item of BTECH_DEMO_RESOURCES) {
-            if (!existingTitles.has(item.title)) {
-              combined.push(item);
-            }
-          }
-          setResources(combined);
-        }
-
-
-        if (plan && plan.allocations && plan.allocations.length > 0) {
-          setAllocations(plan.allocations);
-          setDailyMinutesTarget(plan.daily_target_minutes || 240);
-        } else {
-          if (initialStage === 'class_10' || initialStage === 'class_9') {
-            setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
-          } else {
-            setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-          }
-        }
-      } catch (err) {
-        console.error('Error loading data', err);
-      }
-    }
-    loadData();
-  }, []);
-
-  // Handle stage change
-  const handleStageChange = (stageId: string) => {
-    setCurrentStage(stageId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('study_blueprint_stage', stageId);
-    }
-
-    if (stageId === 'class_10' || stageId === 'class_9') {
-      setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
-    } else {
-      setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-      const btechRole = roles.find(r => r.role_code === 'ai_ml_engineer' || r.role_code === 'full_stack_dev');
-      if (btechRole) setSelectedRole(btechRole);
-    }
-    setToastMessage(`Switched perspective to: ${STAGES.find(s => s.id === stageId)?.label}`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  // Stopwatch interval tick
+  // Timer Interval
   useEffect(() => {
     let interval: any = null;
-    if (timerRunning) {
+    if (stopwatchRunning) {
       interval = setInterval(() => {
-        setTimerSeconds(s => s + 1);
-        setTotalSecondsStudiedToday(t => t + 1);
+        setStopwatchSeconds(prev => (prev > 0 ? prev - 1 : 0));
       }, 1000);
     } else {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [timerRunning]);
+  }, [stopwatchRunning]);
 
-  // Session Completed Toggle
-  const toggleSessionCompleted = (subjectId: string) => {
-    setCompletedSessions(prev => ({
-      ...prev,
-      [subjectId]: !prev[subjectId]
-    }));
+  const formatTimer = (totalSec: number) => {
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Manual Session Adder
-  const handleAddManualSession = () => {
-    if (!newSubName.trim()) return;
-    const newSession: TimetableAllocation = {
-      subject_id: `custom_${Date.now()}`,
-      subject_name: newSubName.trim(),
-      subject_code: newSubCode.trim() || `SUB-${allocations.length + 1}`,
-      planned_minutes: Number(newSubDuration),
-      time_slot: newSubTime,
-      session_order: allocations.length + 1,
-      is_break: false
-    };
-    const updated = [...allocations, newSession];
-    setAllocations(updated);
-    api.put('/study-plans/current', updated).catch(() => null);
-    setNewSubName('');
-    setNewSubCode('');
-    setShowAddModal(false);
-    setToastMessage(`Added "${newSession.subject_name}" to your schedule.`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const branchData: BTechBranchRoadmap =
+    BTECH_BRANCH_ROADMAPS[selectedBranch] || BTECH_BRANCH_ROADMAPS['eee'];
 
-  // Delete / Reset Plan
-  const handleDeletePlan = async () => {
-    try {
-      await api.delete('/study-plans/current');
-    } catch (e) {
-      // ignore
-    }
-    setAllocations([]);
-    setShowDeleteConfirm(false);
-    setToastMessage('Study plan deleted. Timetable is now completely clear.');
-    setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const handleRemoveSession = (index: number) => {
-    const updated = allocations.filter((_, idx) => idx !== index);
-    setAllocations(updated);
-    api.put('/study-plans/current', updated).catch(() => null);
-  };
-
-  const adjustMinutes = (index: number, delta: number) => {
-    const updated = [...allocations];
-    const newMinutes = Math.max(15, updated[index].planned_minutes + delta);
-    updated[index].planned_minutes = newMinutes;
-    setAllocations(updated);
-    api.put('/study-plans/current', updated).catch(() => null);
-  };
-
-  // Live Timer controls
-  const startTimer = (session: TimetableAllocation) => {
-    setActiveTimerSession(session);
-    setTimerSeconds(0);
-    setTimerRunning(true);
-    setToastMessage(`Focus stopwatch running for: ${session.subject_name}`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  const stopAndLogTimer = async () => {
-    if (!activeTimerSession) return;
-    setTimerRunning(false);
-    try {
-      const now = new Date();
-      const startTime = new Date(now.getTime() - timerSeconds * 1000);
-      await api.post('/study-sessions', {
-        subject_id: activeTimerSession.subject_id,
-        task_description: `Focused study on ${activeTimerSession.subject_name}`,
-        started_at: startTime.toISOString(),
-        ended_at: now.toISOString(),
-        duration_seconds: timerSeconds,
-        paused_duration_seconds: 0,
-        session_type: 'timer',
-        session_notes: timerNotes || 'Self-analysis logged session'
-      });
-    } catch (e) {
-      console.error(e);
-    }
-    setCompletedSessions(prev => ({
-      ...prev,
-      [activeTimerSession.subject_id]: true
-    }));
-    setToastMessage(`Logged ${Math.round(timerSeconds / 60)} minutes for ${activeTimerSession.subject_name}. Great job!`);
-    setTimeout(() => {
-      setActiveTimerSession(null);
-      setTimerSeconds(0);
-      setToastMessage(null);
-    }, 2500);
-  };
-
-  // Dashboard self-analysis metrics
-  const totalPlannedStudyMinutes = allocations
-    .filter(a => !a.is_break)
-    .reduce((sum, a) => sum + a.planned_minutes, 0);
-
-  const totalBreakMinutes = allocations
-    .filter(a => a.is_break)
-    .reduce((sum, a) => sum + a.planned_minutes, 0);
-
-  const completedCount = allocations.filter(a => !a.is_break && completedSessions[a.subject_id]).length;
-  const totalSubjectsCount = allocations.filter(a => !a.is_break).length;
-  const completionPercentage = totalSubjectsCount > 0 ? Math.round((completedCount / totalSubjectsCount) * 100) : 0;
-  const studiedMinutesToday = Math.round(totalSecondsStudiedToday / 60);
-  const targetProgressPercentage = Math.min(100, Math.round((studiedMinutesToday / dailyMinutesTarget) * 100));
-
-  // Filter B.Tech resources strictly
-  const filteredBtechResources = resources.filter(res => {
-    // Branch filter
-    if (selectedBtechBranch !== 'all' && res.branch_code !== selectedBtechBranch) return false;
-
-    // University filter (for all branches view)
-    if (selectedBtechBranch === 'all' && selectedUniversity && res.board_or_university_code !== selectedUniversity) {
-      return false;
-    }
-
-    // Type filter
-    if (selectedBtechType && res.resource_type !== selectedBtechType) return false;
-
-    // Search query
-    if (btechSearch.trim()) {
-      const q = btechSearch.toLowerCase();
-      return (
-        res.title.toLowerCase().includes(q) ||
-        res.regulation?.toLowerCase().includes(q) ||
-        res.source_contributor?.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  const BRANCH_TABS = [
+    { id: 'eee', codeNum: '02', short: 'EEE', label: 'Electrical & Electronics', icon: 'bolt', themeColor: 'text-amber-500' },
+    { id: 'ece', codeNum: '04', short: 'ECE', label: 'Electronics & Comm', icon: 'memory', themeColor: 'text-blue-500' },
+    { id: 'cse', codeNum: '05', short: 'CSE', label: 'Computer Science', icon: 'terminal', themeColor: 'text-emerald-500' },
+    { id: 'aiml', codeNum: '42', short: 'AI & ML', label: 'Artificial Intelligence', icon: 'neurology', themeColor: 'text-purple-500' },
+    { id: 'mech', codeNum: '03', short: 'Mechanical', label: 'Robotics & Thermal', icon: 'precision_manufacturing', themeColor: 'text-rose-500' },
+    { id: 'civil', codeNum: '01', short: 'Civil', label: 'Structural & Spatial', icon: 'foundation', themeColor: 'text-cyan-500' }
+  ];
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-900 font-sans antialiased flex flex-col selection:bg-slate-900 selection:text-white">
-      {/* Sleek Top Navigation Bar — Zero Login Required */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] font-sans antialiased flex flex-col selection:bg-[#4f46e5] selection:text-white">
+      {/* ========================================================================= */}
+      {/* STITCH HEADER BAR (Exact Design Theme: Blueprint Precision Engine)         */}
+      {/* ========================================================================= */}
+      <header className="fixed top-0 w-full z-50 bg-[#f8f9ff]/90 backdrop-blur-xl border-b border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Brand */}
-          <div className="flex items-center space-x-2.5 shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-              <Compass className="h-5 w-5 text-brand-400" />
+          <div className="flex items-center gap-3">
+            <div
+              onClick={() => setActiveTab('careers')}
+              className="flex items-center gap-2.5 cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#3525cd] flex items-center justify-center text-white shadow-sm">
+                <span className="material-symbols-outlined text-[20px]">architecture</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold tracking-tight text-[#0b1c30]">STUDY BLUEPRINT</span>
+                <span className="text-[10px] font-mono text-[#464555] uppercase tracking-wider -mt-0.5">
+                  B.Tech OS // R23 Core
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-sm font-black tracking-tight text-slate-900">STUDY BLUEPRINT</span>
-              <span className="hidden sm:block text-[9px] font-semibold text-slate-400 uppercase tracking-widest -mt-0.5">
-                Indian Student OS
+
+            {/* University Tag Badge */}
+            <div className="hidden md:flex items-center gap-1.5 bg-[#eff4ff] border border-[#dce9ff] px-3 py-1 rounded-lg text-[#0b1c30]">
+              <span className="material-symbols-outlined text-[#00687a] text-[16px]">school</span>
+              <span className="text-xs font-semibold">JNTU-GV</span>
+              <span className="px-1.5 py-0.2 rounded bg-[#acedff] text-[#001f26] font-mono text-[10px] font-bold">
+                R23
               </span>
             </div>
           </div>
 
-          {/* The THREE Dedicated Section Tabs */}
-          <nav className="flex items-center space-x-1 sm:space-x-2 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80">
+          {/* Dedicated Section Tabs (Stitch Navigation) */}
+          <nav className="flex items-center gap-1 bg-[#e5eeff]/70 p-1 rounded-xl">
             <button
-              onClick={() => setActivePortal('careers')}
-              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activePortal === 'careers'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+              onClick={() => setActiveTab('careers')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'careers'
+                  ? 'bg-[#4f46e5] text-white shadow-sm font-bold'
+                  : 'text-[#464555] hover:text-[#0b1c30] hover:bg-[#dce9ff]'
               }`}
             >
-              <Milestone className={`h-3.5 w-3.5 ${activePortal === 'careers' ? 'text-brand-400' : 'text-slate-400'}`} />
+              <span className="material-symbols-outlined text-[16px]">account_tree</span>
               <span>1. Career Roadmaps</span>
             </button>
 
             <button
-              onClick={() => setActivePortal('planner')}
-              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activePortal === 'planner'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+              onClick={() => setActiveTab('planner')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'planner'
+                  ? 'bg-[#4f46e5] text-white shadow-sm font-bold'
+                  : 'text-[#464555] hover:text-[#0b1c30] hover:bg-[#dce9ff]'
               }`}
             >
-              <BarChart3 className={`h-3.5 w-3.5 ${activePortal === 'planner' ? 'text-brand-400' : 'text-slate-400'}`} />
+              <span className="material-symbols-outlined text-[16px]">event_note</span>
               <span>2. Study Planner & Tracker</span>
             </button>
 
             <button
-              onClick={() => setActivePortal('resources')}
-              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activePortal === 'resources'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+              onClick={() => setActiveTab('resources')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'resources'
+                  ? 'bg-[#4f46e5] text-white shadow-sm font-bold'
+                  : 'text-[#464555] hover:text-[#0b1c30] hover:bg-[#dce9ff]'
               }`}
             >
-              <BookOpen className={`h-3.5 w-3.5 ${activePortal === 'resources' ? 'text-brand-400' : 'text-slate-400'}`} />
-              <span>3. BTech Study Resources</span>
+              <span className="material-symbols-outlined text-[16px]">library_books</span>
+              <span>3. BTech Resources</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('focus')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'focus'
+                  ? 'bg-[#4f46e5] text-white shadow-sm font-bold'
+                  : 'text-[#464555] hover:text-[#0b1c30] hover:bg-[#dce9ff]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">timer</span>
+              <span>4. Focus Room</span>
             </button>
           </nav>
 
-          {/* Direct Instant Access Badge (Zero Login) */}
-          <div className="hidden lg:flex items-center space-x-2">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Open Platform (No Login Required)</span>
-            </span>
+          {/* Right Profile & Direct Access */}
+          <div className="flex items-center gap-2.5">
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Zero Login Required</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-[#3525cd] flex items-center justify-center text-white shadow-xs">
+              <span className="material-symbols-outlined text-[18px]">person</span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Academic Class Switcher for Career Roadmaps Only */}
-      {activePortal === 'careers' && (
-        <div className="bg-slate-900 text-white border-b border-slate-800 py-2.5 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-4 w-4 text-brand-400 shrink-0" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Filter by Your Academic Class / Level:
-              </span>
+      {/* Main Container */}
+      <main className="w-full pt-20 pb-16 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ========================================================================= */}
+        {/* TAB 1: CAREER ROADMAPS (STITCH CANVAS SCREEN: 0cb35c719d534e0da68ede3dbdd)*/}
+        {/* ========================================================================= */}
+        {activeTab === 'careers' && (
+          <div className="flex flex-col gap-6 w-full animate-in fade-in duration-150">
+            {/* Breadcrumb & Top Indicator Pill */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-mono text-xs text-[#464555] uppercase tracking-wider">
+                <span className="flex items-center gap-1 text-[#3525cd] font-semibold">
+                  <span className="material-symbols-outlined text-[15px]">school</span>
+                  Academic Curriculum & Careers
+                </span>
+                <span className="text-[#c7c4d8]">/</span>
+                <span>B.Tech Engineering Specializations</span>
+                <span className="text-[#c7c4d8]">/</span>
+                <span className="text-[#0b1c30] font-bold">Architecture Flow</span>
+              </div>
+              <div className="inline-flex items-center gap-2 bg-[#eff4ff] border border-[#dce9ff] px-3 py-1 rounded-full shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#00687a] animate-pulse" />
+                <span className="font-mono text-xs text-[#0b1c30] font-semibold">JNTU-GV R23 Standard</span>
+                <span className="text-[#464555] text-[11px] font-mono">• Realtime Verification</span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5">
-              {STAGES.map(stage => {
-                const isSelected = currentStage === stage.id;
-                return (
-                  <button
-                    key={stage.id}
-                    onClick={() => handleStageChange(stage.id)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
-                      isSelected
-                        ? 'bg-brand-500 text-white shadow-sm ring-1 ring-white/30 font-bold'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                    }`}
-                  >
-                    <span>{stage.label}</span>
-                    {isSelected && <Check className="h-3 w-3" />}
-                  </button>
-                );
-              })}
+            {/* Page Title & Micro Description */}
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0b1c30] tracking-tight">
+                Engineering Discipline Architecture & Placements
+              </h1>
+              <p className="text-xs sm:text-sm text-[#464555] max-w-3xl leading-relaxed">
+                End-to-end multi-tier curriculum blueprints connecting collegiate foundational mathematics, core lab deliverables, simulation toolchains, and high-yield recruitment tracks.
+              </p>
+            </div>
+
+            {/* Branch Selection Matrix (The 6 Major Branches) */}
+            <div className="flex flex-col gap-2.5 bg-[#eff4ff] p-4 rounded-2xl shadow-xs border border-[#dce9ff]">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs uppercase tracking-wider text-[#464555] font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-[#3525cd]">hub</span>
+                  Select Engineering Discipline (Branch Pipeline)
+                </span>
+                <span className="font-mono text-[11px] text-[#464555] bg-[#e5eeff] px-2 py-0.5 rounded font-semibold">
+                  R23 Standard Track
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                {BRANCH_TABS.map(tab => {
+                  const isSelected = selectedBranch === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSelectedBranch(tab.id)}
+                      className={`relative flex flex-col p-3.5 rounded-xl text-left transition-all ${
+                        isSelected
+                          ? 'bg-[#4f46e5] text-white shadow-md ring-2 ring-[#3525cd] -translate-y-0.5'
+                          : 'bg-white hover:bg-white/80 text-[#0b1c30] shadow-2xs hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full mb-1.5">
+                        <span
+                          className={`font-mono text-[11px] px-1.5 py-0.5 rounded font-bold ${
+                            isSelected ? 'bg-white/20 text-white' : 'bg-[#e5eeff] text-[#464555]'
+                          }`}
+                        >
+                          {tab.codeNum} {isSelected ? 'ACTIVE' : ''}
+                        </span>
+                        <span
+                          className={`material-symbols-outlined text-[20px] ${
+                            isSelected ? 'text-white' : tab.themeColor
+                          }`}
+                        >
+                          {tab.icon}
+                        </span>
+                      </div>
+                      <span className={`text-sm font-extrabold ${isSelected ? 'text-white' : 'text-[#0b1c30]'}`}>
+                        {tab.short}
+                      </span>
+                      <span
+                        className={`text-[11px] truncate mt-0.5 ${
+                          isSelected ? 'text-white/80' : 'text-[#464555]'
+                        }`}
+                      >
+                        {tab.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Stream Focus Banner (Active Stream Metrics) */}
+            <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm border border-[#e5eeff] p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex flex-col gap-2 max-w-2xl relative z-10">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#e2dfff] text-[#0f0069] font-bold tracking-wider">
+                    DISCIPLINE: {branchData.short_name}-{BRANCH_TABS.find(t => t.id === selectedBranch)?.codeNum || '02'}
+                  </span>
+                  <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#acedff] text-[#001f26] font-bold">
+                    SEM 1 TO 8 SYLLABUS
+                  </span>
+                  <span className="font-mono text-xs text-[#464555]">
+                    • JNTU-GV Autonomous Standard
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-black text-[#0b1c30]">
+                  {branchData.name}
+                </h2>
+
+                <p className="text-xs text-[#464555] leading-relaxed">
+                  {branchData.overview}
+                </p>
+
+                {/* Metrics Strip */}
+                <div className="flex flex-wrap items-center gap-6 pt-2">
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">
+                      Highest Verified CTC
+                    </span>
+                    <span className="text-lg font-black text-[#3525cd]">
+                      {branchData.highest_package}
+                    </span>
+                    <span className="font-mono text-[10px] text-[#464555]">
+                      {selectedBranch === 'eee' ? 'Tesla / Schneider Electric' : selectedBranch === 'ece' ? 'Qualcomm / Nvidia ASIC' : 'Google / Microsoft'}
+                    </span>
+                  </div>
+
+                  <div className="w-px h-8 bg-[#d3e4fe]" />
+
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">
+                      Average Core CTC
+                    </span>
+                    <span className="text-lg font-black text-[#0b1c30]">
+                      {branchData.average_package}
+                    </span>
+                    <span className="font-mono text-[10px] text-[#464555]">
+                      {selectedBranch === 'eee' ? 'EV Powertrain & PSUs' : 'Core Product & IoT'}
+                    </span>
+                  </div>
+
+                  <div className="w-px h-8 bg-[#d3e4fe]" />
+
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">
+                      Accreditation
+                    </span>
+                    <span className="text-lg font-black text-[#00687a]">NBA Tier-1</span>
+                    <span className="font-mono text-[10px] text-[#464555]">
+                      Outcome-Based Education
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0 relative z-10">
+                <a
+                  href={branchData.syllabus_pdf_url}
+                  download={branchData.syllabus_pdf_url.split('/').pop() || `${branchData.branch_code}_syllabus.pdf`}
+                  className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#3525cd] text-white font-semibold text-xs shadow-md hover:bg-[#4f46e5] transition-all hover:scale-[1.01]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  <span>Download Official PDF (R23)</span>
+                </a>
+
+                <button
+                  onClick={() => {
+                    setPreviewPdfUrl(branchData.syllabus_pdf_url);
+                    setPreviewPdfTitle(branchData.syllabus_pdf_title);
+                  }}
+                  className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#e5eeff] text-[#0b1c30] font-semibold text-xs hover:bg-[#dce9ff] transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  <span>Preview Syllabus Blueprint</span>
+                </button>
+
+                <a
+                  href="/docs/academic_blueprint.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1 font-mono text-[11px] text-[#3525cd] hover:underline pt-1"
+                >
+                  <span>View Master Regulations Copy</span>
+                  <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                </a>
+              </div>
+            </div>
+
+            {/* View Mode Sub-tabs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-[#eff4ff] p-1.5 rounded-xl shadow-2xs border border-[#dce9ff]">
+              <div className="flex items-center gap-1 overflow-x-auto">
+                <button
+                  onClick={() => setCareerFlowMode('architecture')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    careerFlowMode === 'architecture'
+                      ? 'bg-white text-[#0b1c30] shadow-xs'
+                      : 'text-[#464555] hover:text-[#0b1c30] hover:bg-white/60'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[#3525cd] text-[18px]">account_tree</span>
+                  <span>Visual Architecture Flow Diagram</span>
+                </button>
+
+                <button
+                  onClick={() => setCareerFlowMode('semesters')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    careerFlowMode === 'semesters'
+                      ? 'bg-white text-[#0b1c30] shadow-xs'
+                      : 'text-[#464555] hover:text-[#0b1c30] hover:bg-white/60'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">calendar_view_week</span>
+                  <span>4-Year Semester Grid (All 8 Sems)</span>
+                </button>
+
+                <button
+                  onClick={() => setCareerFlowMode('placements')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    careerFlowMode === 'placements'
+                      ? 'bg-white text-[#0b1c30] shadow-xs'
+                      : 'text-[#464555] hover:text-[#0b1c30] hover:bg-white/60'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">corporate_fare</span>
+                  <span>PSU & Corporate Placements Matrix</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3">
+                <span className="font-mono text-[11px] text-[#464555] uppercase font-semibold">Flow Mode:</span>
+                <span className="font-mono text-[11px] text-[#3525cd] font-bold">Comprehensive Multi-Phase</span>
+              </div>
+            </div>
+
+            {/* ===================================================================== */}
+            {/* ARCHITECTURE FLOW DIAGRAM (Phases 01 to 05)                            */}
+            {/* ===================================================================== */}
+            {careerFlowMode === 'architecture' && (
+              <div className="flex flex-col gap-5 relative">
+                {/* PHASE 01 */}
+                <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-[#e5eeff] hover:shadow-md transition-shadow">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-[#eff4ff]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#3525cd] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        01
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#0b1c30]">
+                            Phase 01: Foundational Modeling & Circuit Laws
+                          </span>
+                          <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-[#e5eeff] text-[#0b1c30] font-semibold">
+                            Year 1 (Sem 1 & 2)
+                          </span>
+                        </div>
+                        <span className="text-xs text-[#464555]">
+                          Mathematical Rigor, Differential Calculus, Matrix Algebra & Passive Network Theorems
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-mono text-xs bg-[#eff4ff] px-3 py-1 rounded-lg">
+                      <span className="text-[#464555] font-medium">Input Prerequisites:</span>
+                      <span className="text-[#3525cd] font-bold">+2 MPC Physics & Calculus</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    {/* Core Modules */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#3525cd] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                        Core Architecture Modules
+                      </span>
+                      <ul className="flex flex-col gap-1.5 text-xs text-[#0b1c30]">
+                        {branchData.four_year_plan[0].semesters[0].core_subjects.map((sub, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]" />
+                          <span>Differential Equations & Transform Calculus</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]" />
+                          <span>Engineering Graphics & CAD Drafting</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Toolchains */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#00687a] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">terminal</span>
+                        Simulation Toolchains
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {['LTspice', 'MATLAB Basic Scripts', 'Tinkercad Circuits', 'AutoCAD Electrical'].map(t => (
+                          <span key={t} className="font-mono text-[11px] px-2 py-1 rounded bg-white text-[#0b1c30] font-semibold shadow-2xs border border-[#dce9ff]">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-[#dce9ff]">
+                        <span className="font-mono text-[10px] text-[#464555] font-bold uppercase">Laboratory Testing Gates</span>
+                        <span className="text-xs text-[#0b1c30]">
+                          {branchData.four_year_plan[0].semesters[0].labs.join(' • ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hardware Deliverable */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#41485e] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">hardware</span>
+                        Hardware / Prototype Deliverable
+                      </span>
+                      <div className="p-2.5 rounded-lg bg-white text-[#0b1c30] text-xs shadow-2xs border border-[#dce9ff]">
+                        <span className="font-semibold text-[#0b1c30] block mb-0.5">Bench Milestone 01:</span>
+                        Verification of Thevenin/Norton Theorems on Breadboard with Dual Trace DSO & DC Bench Supply.
+                      </div>
+                      <div className="mt-auto pt-2">
+                        <div className="flex items-center justify-between font-mono text-[11px] text-[#464555]">
+                          <span>Competency Gate</span>
+                          <span className="text-[#3525cd] font-bold">KVL/KCL, AC Phasors, Resonance</span>
+                        </div>
+                        <div className="w-full bg-[#dce9ff] rounded-full h-1.5 mt-1 overflow-hidden">
+                          <div className="bg-[#3525cd] h-1.5 rounded-full w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connector Spine Marker 1 -> 2 */}
+                <div className="flex items-center justify-center -my-2.5 z-10">
+                  <span className="bg-white text-[#3525cd] px-3.5 py-1 rounded-full shadow-sm text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 border border-[#dce9ff]">
+                    <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
+                    Pipeline Flow: Network Theorems Feed Electromagnetic Machinery
+                  </span>
+                </div>
+
+                {/* PHASE 02 */}
+                <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-[#e5eeff] hover:shadow-md transition-shadow">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-[#eff4ff]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#00687a] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        02
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#0b1c30]">
+                            Phase 02: Electromagnetic Energy & Rotating Core Machines Bus
+                          </span>
+                          <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-[#e5eeff] text-[#0b1c30] font-semibold">
+                            Year 2 (Sem 3 & 4)
+                          </span>
+                        </div>
+                        <span className="text-xs text-[#464555]">
+                          Faraday&apos;s Laws, DC Motors/Generators, Transformers, 3-Phase Induction & Synchronous Machines
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-mono text-xs bg-[#eff4ff] px-3 py-1 rounded-lg">
+                      <span className="text-[#464555] font-medium">Prerequisite:</span>
+                      <span className="text-[#00687a] font-bold">Circuit Analysis & Maxwell EMF Equations</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    {/* Core Modules */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#00687a] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                        Core Architecture Modules
+                      </span>
+                      <ul className="flex flex-col gap-1.5 text-xs text-[#0b1c30]">
+                        {branchData.four_year_plan[1].semesters[0].core_subjects.map((sub, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00687a]" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                        {branchData.four_year_plan[1].semesters[1].core_subjects.slice(0, 2).map((sub, idx) => (
+                          <li key={`sem2-${idx}`} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00687a]" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Toolchains */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#00687a] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">terminal</span>
+                        Simulation Toolchains
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {['MATLAB Simscape Electrical', 'Ansys Maxwell (FEA)', 'PSpice Multisim', 'Proteus Design Suite'].map(t => (
+                          <span key={t} className="font-mono text-[11px] px-2 py-1 rounded bg-white text-[#0b1c30] font-semibold shadow-2xs border border-[#dce9ff]">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-[#dce9ff]">
+                        <span className="font-mono text-[10px] text-[#464555] font-bold uppercase">Laboratory Testing Gates</span>
+                        <span className="text-xs text-[#0b1c30]">
+                          {branchData.four_year_plan[1].semesters[0].labs.join(' • ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hardware Deliverable */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#41485e] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">hardware</span>
+                        Hardware / Prototype Deliverable
+                      </span>
+                      <div className="p-2.5 rounded-lg bg-white text-[#0b1c30] text-xs shadow-2xs border border-[#dce9ff]">
+                        <span className="font-semibold text-[#0b1c30] block mb-0.5">Bench Milestone 02:</span>
+                        Open-Circuit & Short-Circuit Pre-determination of Transformer Efficiency; DC Shunt Motor 3-Point Starter Speed Rig.
+                      </div>
+                      <div className="mt-auto pt-2">
+                        <div className="flex items-center justify-between font-mono text-[11px] text-[#464555]">
+                          <span>Competency Gate</span>
+                          <span className="text-[#00687a] font-bold">Magnetic Circuit Sizing & RMF Synchronization</span>
+                        </div>
+                        <div className="w-full bg-[#dce9ff] rounded-full h-1.5 mt-1 overflow-hidden">
+                          <div className="bg-[#00687a] h-1.5 rounded-full w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connector Spine Marker 2 -> 3 */}
+                <div className="flex items-center justify-center -my-2.5 z-10">
+                  <span className="bg-white text-[#3525cd] px-3.5 py-1 rounded-full shadow-sm text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 border border-[#dce9ff]">
+                    <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
+                    Pipeline Flow: Machine Dynamics Feed Semiconductor Converters & Linear Feedback Control
+                  </span>
+                </div>
+
+                {/* PHASE 03 */}
+                <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-[#e5eeff] hover:shadow-md transition-shadow">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-[#eff4ff]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#4f46e5] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        03
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#0b1c30]">
+                            Phase 03: Power Converter Processing & Linear Control Core
+                          </span>
+                          <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-[#e5eeff] text-[#0b1c30] font-semibold">
+                            Year 3 (Sem 5 & 6)
+                          </span>
+                        </div>
+                        <span className="text-xs text-[#464555]">
+                          Power Electronics (MOSFET/IGBT Converters), Power Systems Analysis, PID Controllers & Microcontrollers
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-mono text-xs bg-[#eff4ff] px-3 py-1 rounded-lg">
+                      <span className="text-[#464555] font-medium">Prerequisite:</span>
+                      <span className="text-[#4f46e5] font-bold">AC Machines & Laplace Transform Stability</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    {/* Core Modules */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#4f46e5] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                        Core Architecture Modules
+                      </span>
+                      <ul className="flex flex-col gap-1.5 text-xs text-[#0b1c30]">
+                        {branchData.four_year_plan[2].semesters[0].core_subjects.map((sub, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4f46e5]" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                        {branchData.four_year_plan[2].semesters[1].core_subjects.slice(0, 2).map((sub, idx) => (
+                          <li key={`sem3-${idx}`} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#4f46e5]" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Toolchains */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#4f46e5] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">terminal</span>
+                        Simulation Toolchains
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {['ETAP (Load Flow & Faults)', 'PSCAD Transients', 'Keil uVision (ARM)', 'Simulink Control Design'].map(t => (
+                          <span key={t} className="font-mono text-[11px] px-2 py-1 rounded bg-white text-[#0b1c30] font-semibold shadow-2xs border border-[#dce9ff]">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-[#dce9ff]">
+                        <span className="font-mono text-[10px] text-[#464555] font-bold uppercase">Laboratory Testing Gates</span>
+                        <span className="text-xs text-[#0b1c30]">
+                          {branchData.four_year_plan[2].semesters[0].labs.join(' • ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hardware Deliverable */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#41485e] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">hardware</span>
+                        Hardware / Prototype Deliverable
+                      </span>
+                      <div className="p-2.5 rounded-lg bg-white text-[#0b1c30] text-xs shadow-2xs border border-[#dce9ff]">
+                        <span className="font-semibold text-[#0b1c30] block mb-0.5">Bench Milestone 03:</span>
+                        Closed-Loop DC-DC Buck/Boost Converter with PWM Microcontroller Gate Driver & Current Feedback Protection.
+                      </div>
+                      <div className="mt-auto pt-2">
+                        <div className="flex items-center justify-between font-mono text-[11px] text-[#464555]">
+                          <span>Competency Gate</span>
+                          <span className="text-[#4f46e5] font-bold">Root Locus Stability & THD Filter Design</span>
+                        </div>
+                        <div className="w-full bg-[#dce9ff] rounded-full h-1.5 mt-1 overflow-hidden">
+                          <div className="bg-[#4f46e5] h-1.5 rounded-full w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connector Spine Marker 3 -> 4 */}
+                <div className="flex items-center justify-center -my-2.5 z-10">
+                  <span className="bg-white text-[#3525cd] px-3.5 py-1 rounded-full shadow-sm text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 border border-[#dce9ff]">
+                    <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
+                    Pipeline Flow: Converter Topology Integrates into Smart Grid, EV Powertrains & Industrial SCADA
+                  </span>
+                </div>
+
+                {/* PHASE 04 */}
+                <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-[#e5eeff] hover:shadow-md transition-shadow">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-[#eff4ff]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        04
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-[#0b1c30]">
+                            Phase 04: Industrial Automation, EV & Smart Grid Specialization Engine
+                          </span>
+                          <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-[#e5eeff] text-[#0b1c30] font-semibold">
+                            Year 4 (Sem 7 & 8)
+                          </span>
+                        </div>
+                        <span className="text-xs text-[#464555]">
+                          Electric Vehicle Drivetrains, Battery Management Systems (BMS), PLC / SCADA Automation & Capstone Thesis
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-mono text-xs bg-[#eff4ff] px-3 py-1 rounded-lg">
+                      <span className="text-[#464555] font-medium">Prerequisite:</span>
+                      <span className="text-emerald-700 font-bold">Power Converters & Grid Fault Protection</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    {/* Core Modules */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-emerald-700 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                        Core Architecture Modules
+                      </span>
+                      <ul className="flex flex-col gap-1.5 text-xs text-[#0b1c30]">
+                        {branchData.four_year_plan[3].semesters[0].core_subjects.map((sub, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                            <span>{sub}</span>
+                          </li>
+                        ))}
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                          <span>Industry Internship & Capstone Project Evaluation</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Toolchains */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-emerald-700 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">terminal</span>
+                        Simulation Toolchains
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {['Siemens TIA Portal', 'DIgSILENT PowerFactory', 'Simscape Battery & Driveline', 'KiCad Multi-layer'].map(t => (
+                          <span key={t} className="font-mono text-[11px] px-2 py-1 rounded bg-white text-[#0b1c30] font-semibold shadow-2xs border border-[#dce9ff]">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-[#dce9ff]">
+                        <span className="font-mono text-[10px] text-[#464555] font-bold uppercase">Laboratory Testing Gates</span>
+                        <span className="text-xs text-[#0b1c30]">
+                          {branchData.four_year_plan[3].semesters[0].labs.join(' • ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hardware Deliverable */}
+                    <div className="flex flex-col gap-2 p-4 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+                      <span className="font-mono text-xs text-[#41485e] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">hardware</span>
+                        Capstone Project Deliverable
+                      </span>
+                      <div className="p-2.5 rounded-lg bg-white text-[#0b1c30] text-xs shadow-2xs border border-[#dce9ff]">
+                        <span className="font-semibold text-[#0b1c30] block mb-0.5">Capstone Thesis:</span>
+                        {branchData.featured_projects[2]?.title || 'Complete EV Battery Management System (BMS) with CAN Bus & Active Cell Balancing'}: {branchData.featured_projects[2]?.description.slice(0, 110)}...
+                      </div>
+                      <div className="mt-auto pt-2">
+                        <div className="flex items-center justify-between font-mono text-[11px] text-[#464555]">
+                          <span>Competency Gate</span>
+                          <span className="text-emerald-700 font-bold">Production Sizing & SCADA Synchronization</span>
+                        </div>
+                        <div className="w-full bg-[#dce9ff] rounded-full h-1.5 mt-1 overflow-hidden">
+                          <div className="bg-emerald-600 h-1.5 rounded-full w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connector Spine Marker 4 -> 5 */}
+                <div className="flex items-center justify-center -my-2.5 z-10">
+                  <span className="bg-[#0b1c30] text-white px-4 py-1.5 rounded-full shadow-md text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-emerald-400">arrow_downward</span>
+                    Architecture Output Demux: 4 High-Growth Career Placement Gateways
+                  </span>
+                </div>
+
+                {/* PHASE 05: CAREER GATEWAYS DEMUX (STITCH CANVAS SPEC) */}
+                <div className="bg-[#0b1c30] text-white rounded-2xl p-6 sm:p-7 shadow-lg space-y-5 border border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#3525cd] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        05
+                      </div>
+                      <div className="flex flex-col">
+                        <h4 className="text-base font-bold text-white">
+                          Phase 05: Output Career Architecture & Industry Placement Gateways
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          {branchData.name} graduates demux into 4 distinct, lucrative national and international technical pathways.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-3 py-1 rounded-xl">
+                      Peak CTC: {branchData.highest_package}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    {/* Track A: PSUs & GATE */}
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold uppercase text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                          Track A: PSUs & GATE
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-white">Central PSUs & Power Utilities</h5>
+                      <p className="text-[11px] text-slate-300">
+                        Executive Trainee in PGCIL, NTPC, BHEL, ISRO, NPCIL, and State TRANSCO/GENCO.
+                      </p>
+                      <div className="pt-2 border-t border-slate-700/60">
+                        <span className="text-[10px] text-slate-400 block font-mono">Recruiters:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {branchData.psu_recruiters.slice(0, 4).map(c => (
+                            <span key={c} className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-300 font-semibold">
+                              {c.split('(')[0]}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Track B: EV & Power Electronics */}
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold uppercase text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">
+                          Track B: EV & Power Tech
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-white">Electric Vehicles & Grid MNCs</h5>
+                      <p className="text-[11px] text-slate-300">
+                        BMS Design Engineer, Inverter R&D, Motor Drive Specialist, Renewable Grid Specialist.
+                      </p>
+                      <div className="pt-2 border-t border-slate-700/60">
+                        <span className="text-[10px] text-slate-400 block font-mono">Recruiters:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {['Schneider', 'Tesla', 'Ather Energy', 'ABB Group', 'Bosch'].map(c => (
+                            <span key={c} className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-300 font-semibold">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Track C: Industrial Automation & Robotics */}
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold uppercase text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded">
+                          Track C: Automation & IoT
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-white">PLC / SCADA & Robotics</h5>
+                      <p className="text-[11px] text-slate-300">
+                        Industrial Automation Engineer, Embedded Hardware Designer, Substation Automation Engineer.
+                      </p>
+                      <div className="pt-2 border-t border-slate-700/60">
+                        <span className="text-[10px] text-slate-400 block font-mono">Recruiters:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {['Siemens', 'Honeywell', 'Rockwell', 'L&T Electrical'].map(c => (
+                            <span key={c} className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-300 font-semibold">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Track D: Software & Tech Product */}
+                    <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-700/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold uppercase text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded">
+                          Track D: Tech & Software
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-white">High-Growth Tech / SDE</h5>
+                      <p className="text-[11px] text-slate-300">
+                        C++ Firmware Engineer, Data Pipelines, Algorithmic Optimization, Cloud Integration.
+                      </p>
+                      <div className="pt-2 border-t border-slate-700/60">
+                        <span className="text-[10px] text-slate-400 block font-mono">Recruiters:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {['TCS Digital', 'Cognizant GenC', 'Infosys DSE', 'Product MNCs'].map(c => (
+                            <span key={c} className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-300 font-semibold">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* View 2: Semesters Grid */}
+            {careerFlowMode === 'semesters' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in">
+                {branchData.four_year_plan.map(yearPlan => (
+                  <div key={yearPlan.year} className="bg-white rounded-2xl p-5 border border-[#e5eeff] shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#0b1c30] text-white font-mono">
+                        {yearPlan.stage_name}
+                      </span>
+                      <span className="text-[11px] font-semibold text-[#3525cd] bg-[#e5eeff] px-2 py-0.5 rounded font-mono">
+                        {yearPlan.certification}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-[#0b1c30]">{yearPlan.title}</h4>
+                    <p className="text-xs text-[#464555]">{yearPlan.theme}</p>
+
+                    <div className="space-y-2.5 pt-2">
+                      {yearPlan.semesters.map(sem => (
+                        <div key={sem.sem_number} className="bg-[#eff4ff] p-3 rounded-xl border border-[#dce9ff] space-y-1">
+                          <span className="text-xs font-bold text-[#0b1c30] block">{sem.sem_name}</span>
+                          <span className="font-mono text-[10px] text-[#464555] block">Core Courses:</span>
+                          <p className="text-xs text-[#0b1c30]">{sem.core_subjects.join(' • ')}</p>
+                          <div className="pt-1 text-[11px] text-[#3525cd] font-medium">
+                            Labs: {sem.labs.join(' • ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* View 3: Placements Matrix */}
+            {careerFlowMode === 'placements' && (
+              <div className="space-y-4 animate-in fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-2xl p-6 border border-[#e5eeff] shadow-sm space-y-3">
+                    <h3 className="text-sm font-bold uppercase font-mono tracking-wider text-[#0b1c30]">
+                      Top Central PSUs (GATE Qualification)
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {branchData.psu_recruiters.map(p => (
+                        <span key={p} className="px-3 py-1.5 rounded-lg bg-[#eff4ff] border border-[#dce9ff] text-xs font-bold text-[#0b1c30]">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 border border-[#e5eeff] shadow-sm space-y-3">
+                    <h3 className="text-sm font-bold uppercase font-mono tracking-wider text-[#0b1c30]">
+                      Tier-1 Corporate & MNC Recruiters
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {branchData.corporate_recruiters.map(c => (
+                        <span key={c} className="px-3 py-1.5 rounded-lg bg-[#eff4ff] border border-[#dce9ff] text-xs font-bold text-[#0b1c30]">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 2: STUDY PLANNER & TRACKER (STITCH CANVAS: 449d59f0dc2a4bf19cb336942a)*/}
+        {/* ========================================================================= */}
+        {activeTab === 'planner' && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-[#e5eeff]">
+              <div>
+                <div className="inline-flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-[#e5eeff] text-[#3525cd] font-mono text-[11px] font-bold uppercase">
+                    JNTU-GV // R23 Curricular Engine
+                  </span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#464555]">
+                    <span className="w-2 h-2 rounded-full bg-[#00687a] animate-pulse" />
+                    Sync Active • 12ms
+                  </span>
+                </div>
+                <h1 className="text-2xl font-black text-[#0b1c30] mt-1">
+                  Student Study Dashboard & Precision Tracker
+                </h1>
+                <p className="text-xs text-[#464555]">
+                  Analyze daily learning efficiency, track study streaks, launch high-precision stopwatches, and synthesize exam readiness.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#e5eeff] hover:bg-[#dce9ff] text-[#0b1c30] text-xs font-bold shadow-2xs transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#3525cd]">add_circle</span>
+                  <span>+ Add Custom Subject</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setTimetable(DEFAULT_TIMETABLE);
+                    setToastMessage('Auto-balanced standard R23 study timetable.');
+                    setTimeout(() => setToastMessage(null), 3000);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#3525cd] text-white text-xs font-bold shadow-sm hover:bg-[#4f46e5] transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                  <span>Auto-Balance Schedule</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 4-Card KPI Metric Row (Stitch Design) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* KPI 1 */}
+              <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#e5eeff] flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">Today&apos;s Study Target</span>
+                    <div className="flex items-baseline gap-1.5 mt-1.5">
+                      <span className="text-2xl font-black text-[#0b1c30]">1.8h</span>
+                      <span className="text-xs text-[#464555] font-semibold">/ 3.2h</span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-[#eff4ff] flex items-center justify-center text-[#3525cd]">
+                    <span className="material-symbols-outlined text-[20px]">timer</span>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="flex justify-between items-center mb-1 text-[11px]">
+                    <span className="font-bold text-[#3525cd]">57% Achieved</span>
+                    <span className="text-[#464555] font-semibold">On Track</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-[#e5eeff] overflow-hidden">
+                    <div className="h-full bg-[#3525cd] rounded-full" style={{ width: '57%' }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* KPI 2 */}
+              <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#e5eeff] flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">Consistency Streak</span>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-2xl font-black text-[#0b1c30]">5 Days</span>
+                      <span className="text-lg">🔥</span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-[#eff4ff] flex items-center justify-center text-[#00687a]">
+                    <span className="material-symbols-outlined text-[20px]">local_fire_department</span>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between font-mono text-[11px]">
+                  <span className="text-[#464555]">Personal Record</span>
+                  <span className="text-emerald-700 font-bold">14 Days Clean</span>
+                </div>
+              </div>
+
+              {/* KPI 3 */}
+              <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#e5eeff] flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">Focus Rate / Efficiency</span>
+                    <div className="flex items-baseline gap-1 mt-1.5">
+                      <span className="text-2xl font-black text-[#0b1c30]">92%</span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-[#eff4ff] flex items-center justify-center text-emerald-700">
+                    <span className="material-symbols-outlined text-[20px]">insights</span>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between text-[11px]">
+                  <span className="text-[#464555]">Active Concentration</span>
+                  <span className="text-emerald-700 font-bold">+4% vs Yesterday</span>
+                </div>
+              </div>
+
+              {/* KPI 4 */}
+              <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#e5eeff] flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-mono text-[10px] text-[#464555] uppercase font-bold">Schedule Completion</span>
+                    <div className="flex items-baseline gap-1 mt-1.5">
+                      <span className="text-2xl font-black text-[#0b1c30]">
+                        {Object.values(completedSessions).filter(Boolean).length}
+                      </span>
+                      <span className="text-xs text-[#464555] font-semibold">/ {timetable.filter(t => !t.is_break).length} Finished</span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-[#eff4ff] flex items-center justify-center text-[#3525cd]">
+                    <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="w-full h-2 rounded-full bg-[#e5eeff] overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full"
+                      style={{
+                        width: `${Math.round((Object.values(completedSessions).filter(Boolean).length / Math.max(1, timetable.filter(t => !t.is_break).length)) * 100)}%`
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Two-Column Layout: Left Timetable, Right Live Focus Stopwatch */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column (7 cols): Today's Timetable */}
+              <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-[#e5eeff] shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-[#eff4ff] pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#3525cd] text-[18px]">calendar_today</span>
+                    <h3 className="text-sm font-bold text-[#0b1c30]">Today&apos;s Interactive Study Timetable</h3>
+                  </div>
+                  <span className="font-mono text-[11px] text-[#464555]">
+                    {timetable.length} Scheduled Slots
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {timetable.map((item, idx) => {
+                    const isDone = completedSessions[item.subject_id];
+                    if (item.is_break) {
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-[#eff4ff]/60 border border-dashed border-[#dce9ff] p-3 rounded-xl flex items-center justify-between text-xs text-[#464555]"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px] text-[#00687a]">bedtime</span>
+                            <span className="font-semibold">{item.subject_name}</span>
+                          </div>
+                          <span className="font-mono text-[11px]">{item.time_slot} ({item.planned_minutes}m)</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={item.subject_id}
+                        className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                          isDone
+                            ? 'bg-[#eff4ff]/40 border-[#dce9ff] opacity-65'
+                            : 'bg-white border-[#e5eeff] hover:border-[#3525cd]/40 shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() =>
+                              setCompletedSessions(prev => ({
+                                ...prev,
+                                [item.subject_id]: !prev[item.subject_id]
+                              }))
+                            }
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                              isDone
+                                ? 'bg-emerald-600 text-white'
+                                : 'border border-[#c7c4d8] hover:border-[#3525cd]'
+                            }`}
+                          >
+                            {isDone && <Check className="h-4 w-4" />}
+                          </button>
+
+                          <div>
+                            <h4 className={`text-xs font-bold ${isDone ? 'line-through text-[#464555]' : 'text-[#0b1c30]'}`}>
+                              {item.subject_name}
+                            </h4>
+                            <div className="flex items-center gap-2 text-[11px] text-[#464555] font-mono mt-0.5">
+                              <span>{item.subject_code}</span>
+                              <span>•</span>
+                              <span>{item.time_slot}</span>
+                              <span>•</span>
+                              <span>{item.planned_minutes} min</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setActiveSessionName(item.subject_name);
+                            setStopwatchRunning(true);
+                            setActiveTab('focus');
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#3525cd] hover:text-white text-[#3525cd] font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
+                        >
+                          <Play className="h-3 w-3 fill-current" />
+                          <span>Start Focus</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Reflection Notes */}
+                <div className="pt-3 border-t border-[#eff4ff] space-y-2">
+                  <span className="font-mono text-xs text-[#0b1c30] font-bold block">
+                    Daily Study Reflection & Weak Spot Log:
+                  </span>
+                  <textarea
+                    value={reflectionText}
+                    onChange={e => setReflectionText(e.target.value)}
+                    rows={2}
+                    className="w-full p-3 rounded-xl border border-[#dce9ff] bg-[#eff4ff]/40 text-xs text-[#0b1c30] focus:ring-2 focus:ring-[#3525cd]/20 focus:outline-none"
+                    placeholder="Log formulas to review or topics for tomorrow..."
+                  />
+                </div>
+              </div>
+
+              {/* Right Column (5 cols): High-Precision Stopwatch Preview */}
+              <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-[#e5eeff] shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-[#eff4ff] pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#3525cd] text-[18px]">timer</span>
+                    <h3 className="text-sm font-bold text-[#0b1c30]">Live Focus Stopwatch Room</h3>
+                  </div>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+
+                <div className="flex flex-col items-center justify-center p-6 bg-[#eff4ff]/60 rounded-2xl border border-[#dce9ff]">
+                  <span className="text-[11px] font-mono text-[#464555] uppercase font-semibold mb-2">
+                    Active Study Target
+                  </span>
+                  <h4 className="text-xs font-bold text-[#0b1c30] text-center mb-4 line-clamp-1">
+                    {activeSessionName}
+                  </h4>
+
+                  {/* Circular Timer Visual */}
+                  <div className="relative w-44 h-44 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="44"
+                        className="stroke-[#dce9ff]"
+                        strokeWidth="6"
+                        fill="none"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="44"
+                        className="stroke-[#3525cd] transition-all duration-1000"
+                        strokeWidth="6"
+                        strokeDasharray="276"
+                        strokeDashoffset={276 - (276 * (stopwatchSeconds / 3000))}
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                    </svg>
+
+                    <div className="absolute flex flex-col items-center">
+                      <span className="text-3xl font-black font-mono text-[#0b1c30]">
+                        {formatTimer(stopwatchSeconds)}
+                      </span>
+                      <span className="text-[10px] font-mono text-[#464555] uppercase mt-0.5">
+                        {stopwatchRunning ? 'Focus Active' : 'Paused'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stopwatch Controls */}
+                  <div className="flex items-center gap-3 mt-5">
+                    <button
+                      onClick={() => setStopwatchRunning(!stopwatchRunning)}
+                      className={`px-5 py-2 rounded-xl text-xs font-bold text-white shadow-sm transition-all flex items-center gap-1.5 ${
+                        stopwatchRunning ? 'bg-amber-600 hover:bg-amber-700' : 'bg-[#3525cd] hover:bg-[#4f46e5]'
+                      }`}
+                    >
+                      {stopwatchRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                      <span>{stopwatchRunning ? 'Pause' : 'Start Focus'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setStopwatchRunning(false);
+                        setStopwatchSeconds(1890);
+                      }}
+                      className="p-2 rounded-xl border border-[#dce9ff] text-[#464555] hover:bg-white text-xs"
+                      title="Reset Timer"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mode Selector */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  {[
+                    { id: 'pomodoro', label: 'Pomodoro', mins: 25, sec: 1500 },
+                    { id: 'deep', label: 'Deep Work', mins: 50, sec: 3000 },
+                    { id: 'custom', label: 'Standard', mins: 30, sec: 1800 }
+                  ].map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setStopwatchMode(m.id as any);
+                        setStopwatchSeconds(m.sec);
+                        setStopwatchRunning(false);
+                      }}
+                      className={`p-2 rounded-xl border transition-all ${
+                        stopwatchMode === m.id
+                          ? 'bg-[#3525cd] text-white font-bold border-[#3525cd]'
+                          : 'bg-white border-[#dce9ff] text-[#0b1c30] hover:bg-[#eff4ff]'
+                      }`}
+                    >
+                      <div className="font-semibold">{m.label}</div>
+                      <div className="text-[10px] opacity-80">{m.mins} min</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: BTECH RESOURCES (STITCH CANVAS SCREEN: ab8e3d3a9ba944de80a07af54c)  */}
+        {/* ========================================================================= */}
+        {activeTab === 'resources' && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            {/* Header */}
+            <div className="pb-4 border-b border-[#e5eeff]">
+              <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#e2dfff] text-[#0f0069] font-bold">
+                B.Tech Curricular Bank // R23 Regulation
+              </span>
+              <h1 className="text-2xl font-black text-[#0b1c30] mt-1">
+                BTech University Syllabi, Question Papers & Lab Manuals
+              </h1>
+              <p className="text-xs text-[#464555]">
+                Direct zero-error downloads of verified autonomous college PDFs, JNTU-GV, AU, and JNTU-K question banks.
+              </p>
+            </div>
+
+            {/* University & Branch Filters */}
+            <div className="bg-white p-5 rounded-2xl border border-[#e5eeff] shadow-xs space-y-4">
+              <div>
+                <span className="font-mono text-xs text-[#464555] font-bold uppercase block mb-2">
+                  Select Affiliated University / Autonomous Board:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'jntugv', name: 'JNTU-GV (Vizianagaram)', reg: 'R23 / R20' },
+                    { id: 'au', name: 'Andhra University (AU)', reg: 'Autonomous' },
+                    { id: 'jntuk', name: 'JNTU-K (Kakinada)', reg: 'R20 / R23' },
+                    { id: 'jntuh', name: 'JNTU-H (Hyderabad)', reg: 'R22' }
+                  ].map(u => (
+                    <button
+                      key={u.id}
+                      onClick={() => setResourceUniversity(u.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                        resourceUniversity === u.id
+                          ? 'bg-[#3525cd] text-white shadow-xs'
+                          : 'bg-[#eff4ff] text-[#0b1c30] hover:bg-[#dce9ff]'
+                      }`}
+                    >
+                      {u.name} <span className="text-[10px] opacity-75">({u.reg})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Branch Filter Chips */}
+              <div>
+                <span className="font-mono text-xs text-[#464555] font-bold uppercase block mb-2">
+                  Discipline Branch Filter:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'all', label: 'All Branches' },
+                    { id: 'eee', label: 'EEE' },
+                    { id: 'ece', label: 'ECE' },
+                    { id: 'cse', label: 'CSE' },
+                    { id: 'aiml', label: 'AI & ML' },
+                    { id: 'mech', label: 'Mechanical' },
+                    { id: 'civil', label: 'Civil' }
+                  ].map(b => (
+                    <button
+                      key={b.id}
+                      onClick={() => setResourceBranch(b.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                        resourceBranch === b.id
+                          ? 'bg-[#0b1c30] text-white'
+                          : 'bg-[#eff4ff] text-[#464555] hover:text-[#0b1c30]'
+                      }`}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Resources Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                {
+                  id: 'res_1',
+                  branch: 'eee',
+                  title: 'JNTU-GV EEE R23 Electrical Circuit Analysis (ECA) Official Syllabus Copy',
+                  code: 'R23-EEE-1102',
+                  pdf: '/docs/jntugv_eee_eca.pdf',
+                  type: 'Official Syllabus'
+                },
+                {
+                  id: 'res_2',
+                  branch: 'eee',
+                  title: 'JNTU-GV EEE DC Machines & Transformers PYQ Analysis Question Bank',
+                  code: 'R20-EEE-2101',
+                  pdf: '/docs/jntugv_eee_machines_pyq.pdf',
+                  type: 'Question Bank'
+                },
+                {
+                  id: 'res_3',
+                  branch: 'eee',
+                  title: 'JNTU-K EEE Basic Electrical Engineering (BEE) Lab Manual & Procedures',
+                  code: 'R23-EEE-LAB1',
+                  pdf: '/docs/jntuk_eee_bee_lab_manual.pdf',
+                  type: 'Lab Manual'
+                },
+                {
+                  id: 'res_4',
+                  branch: 'cse',
+                  title: 'JNTU-GV CSE R23 Linear Algebra & Calculus (M1) Official Syllabus',
+                  code: 'R23-CS-1101',
+                  pdf: '/docs/jntugv_cse_linear_algebra_m1.pdf',
+                  type: 'Official Syllabus'
+                },
+                {
+                  id: 'res_5',
+                  branch: 'ece',
+                  title: 'JNTU-GV ECE R23 Electronic Devices & Circuits (EDC) Syllabus Copy',
+                  code: 'R23-EC-1101',
+                  pdf: '/docs/jntugv_ece_edc.pdf',
+                  type: 'Official Syllabus'
+                },
+                {
+                  id: 'res_6',
+                  branch: 'aiml',
+                  title: 'JNTU-GV AI & Machine Learning Foundations R23 Official Syllabus Copy',
+                  code: 'R23-AI-1101',
+                  pdf: '/docs/jntugv_aiml_foundations.pdf',
+                  type: 'Official Syllabus'
+                }
+              ]
+                .filter(item => resourceBranch === 'all' || item.branch === resourceBranch)
+                .map(res => (
+                  <div
+                    key={res.id}
+                    className="bg-white rounded-2xl p-5 border border-[#e5eeff] shadow-xs flex flex-col justify-between space-y-4 hover:shadow-sm transition-all"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#eff4ff] text-[#3525cd]">
+                          {res.type}
+                        </span>
+                        <span className="font-mono text-[10px] text-[#464555]">{res.code}</span>
+                      </div>
+                      <h3 className="text-xs font-bold text-[#0b1c30] leading-snug line-clamp-2">
+                        {res.title}
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2 border-t border-[#eff4ff]">
+                      <a
+                        href={res.pdf}
+                        download
+                        className="flex-1 py-2 rounded-xl bg-[#3525cd] text-white text-xs font-bold text-center hover:bg-[#4f46e5] transition-colors flex items-center justify-center gap-1 shadow-2xs"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Download PDF</span>
+                      </a>
+                      <button
+                        onClick={() => {
+                          setPreviewPdfUrl(res.pdf);
+                          setPreviewPdfTitle(res.title);
+                        }}
+                        className="p-2 rounded-xl border border-[#dce9ff] text-[#464555] hover:bg-[#eff4ff] transition-colors"
+                        title="Preview"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 4: FOCUS ROOM (STITCH CANVAS SCREEN: 9671e3138b8a4dfb93537da548ce93b)*/}
+        {/* ========================================================================= */}
+        {activeTab === 'focus' && (
+          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-8 space-y-7 animate-in fade-in duration-150">
+            <div className="text-center space-y-1">
+              <span className="font-mono text-xs px-3 py-1 rounded-full bg-[#e2dfff] text-[#0f0069] font-bold uppercase">
+                High-Performance Focus Room
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-[#0b1c30]">
+                {activeSessionName}
+              </h1>
+              <p className="text-xs text-[#464555]">
+                Eliminate distractions. Calibrate your deep work cadence with precision timer intervals.
+              </p>
+            </div>
+
+            {/* Big Stopwatch Display */}
+            <div className="relative w-64 h-64 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  className="stroke-[#dce9ff]"
+                  strokeWidth="5"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  className="stroke-[#3525cd] transition-all duration-1000"
+                  strokeWidth="5"
+                  strokeDasharray="276"
+                  strokeDashoffset={276 - (276 * (stopwatchSeconds / 3000))}
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+
+              <div className="absolute flex flex-col items-center">
+                <span className="text-5xl font-black font-mono text-[#0b1c30] tracking-tight">
+                  {formatTimer(stopwatchSeconds)}
+                </span>
+                <span className="font-mono text-xs text-[#464555] uppercase mt-1">
+                  {stopwatchRunning ? '🔥 Concentration Mode' : 'Paused'}
+                </span>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setStopwatchRunning(!stopwatchRunning)}
+                className={`px-8 py-3 rounded-2xl text-sm font-bold text-white shadow-md transition-all flex items-center gap-2 ${
+                  stopwatchRunning ? 'bg-amber-600 hover:bg-amber-700' : 'bg-[#3525cd] hover:bg-[#4f46e5]'
+                }`}
+              >
+                {stopwatchRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
+                <span>{stopwatchRunning ? 'Pause Session' : 'Start Focus'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setStopwatchRunning(false);
+                  setStopwatchSeconds(1890);
+                }}
+                className="p-3 rounded-2xl border border-[#dce9ff] text-[#464555] hover:bg-white text-sm"
+                title="Reset"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
 
       {/* Floating Status Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-3 duration-200">
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-2 text-xs font-semibold">
+          <div className="bg-[#0b1c30] text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-2 text-xs font-semibold">
             <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
           </div>
         </div>
       )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* ========================================================================= */}
-        {/* SECTION 1: CAREER ROADMAPS                                                */}
-        {/* ========================================================================= */}
-        {activePortal === 'careers' && (
-          <div className="space-y-8 animate-in fade-in duration-200">
-            {/* Header */}
-            <div className="border-b border-slate-200 pb-5">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-[11px] font-bold uppercase tracking-wider mb-2">
-                <Milestone className="h-3.5 w-3.5 text-brand-600" />
-                <span>Dedicated Section 1: Career Roadmaps</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {currentStage === 'class_10' || currentStage === 'class_9'
-                  ? 'What NEXT After 10th Class? — Complete 39-Pathway Career Guidance Flowchart'
-                  : currentStage === 'btech_1'
-                  ? 'BTech 1st Year Engineering → Industry Career Roadmaps'
-                  : currentStage === 'intermediate'
-                  ? 'Intermediate (+2 MPC / BiPC) → National College Entrance Roadmaps'
-                  : 'Diploma / Polytechnic → BTech Lateral Entry & Technical Careers'}
-              </h1>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-4xl">
-                {currentStage === 'class_10' || currentStage === 'class_9'
-                  ? 'Official multi-track educational flowchart for 10th Class / SSLC pass-outs: Intermediate streams (Science, Commerce, Arts), 3-Year Polytechnic, Paramedical, ITI Trades, Direct Defense & Govt Jobs, and Short-Term Professional Courses.'
-                  : `Structured step-by-step milestones, skills, and industry roadmaps for ${STAGES.find(s => s.id === currentStage)?.label}.`}
-              </p>
-            </div>
-
-            {/* ================================================================= */}
-            {/* 10TH CLASS DEDICATED CAREER FLOWCHART (Based on User's Chart)    */}
-            {/* ================================================================= */}
-            {(currentStage === 'class_10' || currentStage === 'class_9') ? (
-              <div className="space-y-6">
-                {/* Visual Pathway Selector (The 6 Big Tracks After 10th) */}
-                <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600">
-                      Primary Career Gateways
-                    </span>
-                    <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-                      Select Any Track to Inspect Full Flowchart & Career Branches:
-                    </h2>
-                  </div>
-
-                  {/* The 6 Core Gateways from the Chart */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                    {[
-                      { id: 'puc', label: '1. Intermediate / PUC', sub: '2 Years (+2)', icon: GraduationCap, color: 'border-blue-300 bg-blue-50/70 text-blue-900' },
-                      { id: 'diploma', label: '2. Polytechnic Diploma', sub: '3 Years (Lateral BTech)', icon: Cpu, color: 'border-teal-300 bg-teal-50/70 text-teal-900' },
-                      { id: 'paramedical', label: '3. Paramedical Diploma', sub: '2-3 Years (Hospital)', icon: Stethoscope, color: 'border-emerald-300 bg-emerald-50/70 text-emerald-900' },
-                      { id: 'iti', label: '4. ITI Trades', sub: '1-2 Years (Technical)', icon: Wrench, color: 'border-amber-300 bg-amber-50/70 text-amber-900' },
-                      { id: 'defense', label: '5. Defense / Govt Jobs', sub: 'Direct 10th Entry', icon: Shield, color: 'border-rose-300 bg-rose-50/70 text-rose-900' },
-                      { id: 'short_courses', label: '6. Job-Oriented Courses', sub: '6 Months - 1 Year', icon: Laptop, color: 'border-purple-300 bg-purple-50/70 text-purple-900' }
-                    ].map(track => {
-                      const Icon = track.icon;
-                      const isSelected = active10thFlowTab === track.id;
-                      return (
-                        <button
-                          key={track.id}
-                          onClick={() => setActive10thFlowTab(track.id as any)}
-                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                            isSelected
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
-                              : `${track.color} hover:shadow-xs`
-                          }`}
-                        >
-                          <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-brand-400' : 'opacity-80'}`} />
-                          <div>
-                            <div className="text-xs font-bold leading-tight">{track.label}</div>
-                            <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-slate-300' : 'opacity-70'}`}>
-                              {track.sub}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* DETAILED PATHWAY CARDS */}
-                {/* 1. INTERMEDIATE / PUC (+2) */}
-                {active10thFlowTab === 'puc' && (
-                  <div className="bg-white rounded-3xl border border-blue-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-                          Gateway 1: 11th Std / 1st PUC / Intermediate (+2) (2 Years)
-                        </span>
-                        <h3 className="text-xl font-bold text-slate-900 mt-2">
-                          Academic Junior College: Science, Commerce, and Arts
-                        </h3>
-                        <p className="text-xs text-slate-600 mt-1">
-                          The most common academic route. Leads to university degrees, competitive entrance tests, and professional licensure.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Science Stream */}
-                      <div className="p-5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-bold text-blue-950">Science (PCMB / PCMC / MPC)</h4>
-                          <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Pre-Engg & Med</span>
-                        </div>
-                        <div className="space-y-2 text-xs text-slate-700">
-                          <div>
-                            <strong className="text-slate-900 block">Entrance Exams:</strong>
-                            <span className="text-slate-600">JEE Main, JEE Advanced, NEET-UG, BITSAT, State EAPCET/KCET, NDA, NATA, IISER (IAT)</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Degree Pathways:</strong>
-                            <span className="text-slate-600">B.Tech / B.E. (all branches), MBBS, BDS, B.Arch, BS-MS Pure Science, Commercial Pilot License</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Future Careers:</strong>
-                            <span className="text-slate-600">Software Engineer, Doctor/Surgeon, Aerospace Scientist, Indian Air Force Pilot, Research Scientist</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Commerce Stream */}
-                      <div className="p-5 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-bold text-amber-950">Commerce (MEC / CEC / EBAC)</h4>
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Finance & Business</span>
-                        </div>
-                        <div className="space-y-2 text-xs text-slate-700">
-                          <div>
-                            <strong className="text-slate-900 block">Professional Exams:</strong>
-                            <span className="text-slate-600">CA Foundation (Chartered Accountancy), CS Foundation, CMA Foundation, IPMAT (IIM 5-Yr MBA)</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Degree Pathways:</strong>
-                            <span className="text-slate-600">B.Com (Honours), BBA, IPM (IIM Indore/Rohtak), BMS, Integrated Corporate Law</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Future Careers:</strong>
-                            <span className="text-slate-600">Chartered Accountant (CA), Chief Financial Officer (CFO), Investment Banker, Company Secretary</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Arts / Humanities Stream */}
-                      <div className="p-5 rounded-2xl border border-purple-200 bg-purple-50/40 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-bold text-purple-950">Arts & Humanities (HEPS)</h4>
-                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">Civil Services & Law</span>
-                        </div>
-                        <div className="space-y-2 text-xs text-slate-700">
-                          <div>
-                            <strong className="text-slate-900 block">Competitive Exams:</strong>
-                            <span className="text-slate-600">CLAT (Common Law Admission Test for NLUs), CUET, NID DAT, NIFT, UPSC Foundation</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Degree Pathways:</strong>
-                            <span className="text-slate-600">BA LLB (5-Yr Integrated), B.Des (Design), BA Political Science / History, Journalism & Mass Comm</span>
-                          </div>
-                          <div>
-                            <strong className="text-slate-900 block">Future Careers:</strong>
-                            <span className="text-slate-600">Civil Services (IAS / IPS / IFS), Supreme Court Advocate, Product Designer, Foreign Diplomat</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. POLYTECHNIC DIPLOMA */}
-                {active10thFlowTab === 'diploma' && (
-                  <div className="bg-white rounded-3xl border border-teal-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="border-b border-slate-100 pb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
-                        Gateway 2: Polytechnic Diploma (3 Years)
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Practical Engineering Foundation with Direct Lateral Entry into 2nd Year B.Tech
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Skip +2 Intermediate! After 10th class, join a 3-year technical polytechnic. After diploma, appear for ECET / DCET to get direct admission into 2nd year B.Tech.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                        <strong className="text-slate-900 block">Computer & IT (CME)</strong>
-                        <p className="text-slate-600 text-[11px]">Hardware, networking, databases, C/C++, Java, and software development.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                        <strong className="text-slate-900 block">Electronics (ECE) & Electrical (EEE)</strong>
-                        <p className="text-slate-600 text-[11px]">Circuits, microcontrollers, telecommunications, power systems, and robotics.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                        <strong className="text-slate-900 block">Mechanical & Automobile</strong>
-                        <p className="text-slate-600 text-[11px]">CAD/CAM, engine mechanics, thermal systems, manufacturing, and industrial automation.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                        <strong className="text-slate-900 block">Civil & Environmental</strong>
-                        <p className="text-slate-600 text-[11px]">Surveying, structural analysis, construction management, and highway engineering.</p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                      <div className="space-y-0.5">
-                        <span className="font-bold text-teal-950">Next Step: ECET Lateral Entry Exam</span>
-                        <p className="text-teal-800 text-[11px]">Enters 2nd year B.Tech (3rd semester) directly in top engineering colleges.</p>
-                      </div>
-                      <span className="px-3 py-1 rounded-xl bg-teal-600 text-white font-bold text-xs shrink-0">
-                        Saves 1 Year vs Ordinary Route
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. PARAMEDICAL DIPLOMA */}
-                {active10thFlowTab === 'paramedical' && (
-                  <div className="bg-white rounded-3xl border border-emerald-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="border-b border-slate-100 pb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                        Gateway 3: Paramedical Diploma (2 to 3 Years)
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Direct Healthcare, Hospital, and Clinical Laboratory Technicians
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1">
-                        High-demand healthcare courses right after 10th class with immediate hospital and diagnostic center placements.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                      {[
-                        { title: 'DMLT (Medical Lab Technology)', desc: 'Blood, pathology, biochemistry analysis in hospitals and research labs.' },
-                        { title: 'Dialysis Technician', desc: 'Operating hemodialysis machines in nephrology departments and kidney care clinics.' },
-                        { title: 'Medical X-Ray & Imaging Tech', desc: 'Radiography, CT scan, and MRI clinical diagnostic support.' },
-                        { title: 'Operation Theatre (OT) Tech', desc: 'Assisting surgeons, surgical instrument prep, and sterilisation procedures.' },
-                        { title: 'Ophthalmic Assistant', desc: 'Eye clinics, vision testing, refraction, and optical diagnostics.' },
-                        { title: 'Health Inspector / Sanitary Inspector', desc: 'Public health monitoring, food safety inspection, and municipal health cells.' }
-                      ].map(card => (
-                        <div key={card.title} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                          <strong className="text-slate-900 block">{card.title}</strong>
-                          <p className="text-slate-600 text-[11px]">{card.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. ITI TRADES */}
-                {active10thFlowTab === 'iti' && (
-                  <div className="bg-white rounded-3xl border border-amber-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="border-b border-slate-100 pb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
-                        Gateway 4: Industrial Training Institute (ITI) (1 to 2 Years)
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Vocational Engineering Trades with Guaranteed Government & PSU Apprenticeships
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Certified by NCVT / SCVT. Immediate entry into Indian Railways (Assistant Loco Pilot), BHEL, DRDO, State Electricity Boards, and private automotive factories.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                      {[
-                        { trade: 'Electrician (2 Yrs)', scope: 'Industrial wiring, transformers, electrical motors, and solar panels.' },
-                        { trade: 'Fitter (2 Yrs)', scope: 'Precision fitting, piping, machining, and manufacturing maintenance.' },
-                        { trade: 'Mechanic Motor Vehicle (2 Yrs)', scope: 'Automobile engines, diagnostics, EVs, and heavy vehicles.' },
-                        { trade: 'Machinist / Turner (2 Yrs)', scope: 'Lathe, milling, CNC machines, and tool manufacturing.' },
-                        { trade: 'Draughtsman (Civil/Mech) (2 Yrs)', scope: 'Architectural drawings, CAD drafting, and structural planning.' },
-                        { trade: 'Welder (1 Yr)', scope: 'Arc, TIG, MIG welding in marine, pipeline, and structural projects.' },
-                        { trade: 'Electronic Mechanic (2 Yrs)', scope: 'PCB assembly, sensor repair, instrumentation, and IoT devices.' },
-                        { trade: 'Tool & Die Maker (3 Yrs)', scope: 'Press tools, injection molds, dies, and aerospace precision parts.' }
-                      ].map(t => (
-                        <div key={t.trade} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                          <strong className="text-slate-900 block font-bold">{t.trade}</strong>
-                          <p className="text-slate-500 text-[10px] leading-relaxed">{t.scope}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. DEFENSE & GOVT JOBS AFTER 10TH */}
-                {active10thFlowTab === 'defense' && (
-                  <div className="bg-white rounded-3xl border border-rose-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="border-b border-slate-100 pb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
-                        Gateway 5: Direct Defense Services & Central Government Jobs
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Immediate Uniformed Services & Government Employment (10th Pass Eligibility)
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Direct recruitment examinations conducted annually for Class 10 graduates with pensions, medical coverage, and rank progression.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">Indian Army — Agniveer General Duty (GD)</strong>
-                        <p className="text-rose-800 text-[11px]">Primary combat force, infantry, gunner, driver. Minimum 45% aggregate in 10th class.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">Indian Navy — Agniveer MR (Matric Recruit)</strong>
-                        <p className="text-rose-800 text-[11px]">Chef, Steward, and Hygienist roles aboard naval warships and shore establishments.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">Indian Coast Guard — Navik (Domestic Branch)</strong>
-                        <p className="text-rose-800 text-[11px]">Maritime coastal patrol, ship operations, logistics, and marine policing.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">SSC GD Constable (CAPF Forces)</strong>
-                        <p className="text-rose-800 text-[11px]">Recruitment into BSF, CISF, CRPF, ITBP, and SSB for border security and national defense.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">Railway Protection Force (RPF) Constable</strong>
-                        <p className="text-rose-800 text-[11px]">Security of Indian railway passengers, trains, and railway property.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1.5">
-                        <strong className="text-rose-950 block font-bold">Railway Group D / Track Maintainer</strong>
-                        <p className="text-rose-800 text-[11px]">Technical track maintenance, signals, and railway engineering staff.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 6. SHORT-TERM JOB ORIENTED COURSES */}
-                {active10thFlowTab === 'short_courses' && (
-                  <div className="bg-white rounded-3xl border border-purple-200/90 p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in">
-                    <div className="border-b border-slate-100 pb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
-                        Gateway 6: Job-Oriented Skill Certifications (6 Months - 1 Year)
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Rapid Creative & Digital Skills for Immediate Freelancing & Employment
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1">
-                        High-paying creative and digital skills that do not require degrees. Start earning right away while pursuing higher education via distance.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">3D Animation & VFX</strong>
-                        <p className="text-slate-600 text-[11px]">Maya, Blender, video editing, game art, and advertising studios.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">Graphic & UI/UX Design</strong>
-                        <p className="text-slate-600 text-[11px]">Photoshop, Figma, Illustrator, digital branding, and social media creative design.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">Web Development & Coding</strong>
-                        <p className="text-slate-600 text-[11px]">HTML, CSS, JavaScript, WordPress, responsive web design for local businesses.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">Cybersecurity & Networking</strong>
-                        <p className="text-slate-600 text-[11px]">CompTIA Network+, hardware assembly, router setup, and firewall basics.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">Digital Marketing & SEO</strong>
-                        <p className="text-slate-600 text-[11px]">Google Ads, social media marketing, content marketing, and online brand growth.</p>
-                      </div>
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-                        <strong className="text-slate-900 block font-bold">Financial Accounting & Tally</strong>
-                        <p className="text-slate-600 text-[11px]">TallyPrime, GST filing, Excel data analysis, and book-keeping for retail stores.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : currentStage === 'intermediate' ? (
-              /* ================================================================= */
-              /* INTERMEDIATE (+2 MPC / BiPC / MEC / ARTS) COMPREHENSIVE ROADMAP   */
-              /* ================================================================= */
-              <div className="space-y-6 animate-in fade-in">
-                {/* Stream Selector */}
-                <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600">Intermediate Streams</span>
-                    <h2 className="text-lg font-bold text-slate-900 mt-1">
-                      Choose Your Intermediate (+2) Stream:
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Click your stream to view complete degree opportunities, national entrance exams, college tiers, and future careers.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { id: 'mpc', label: '1. MPC (Maths, Physics, Chem)', badge: 'Engineering, Architecture & Defense', icon: Laptop, color: 'border-blue-300 bg-blue-50/70 text-blue-900' },
-                      { id: 'bipc', label: '2. BiPC (Biology, Physics, Chem)', badge: 'Medical, Agriculture & Pharmacy', icon: Stethoscope, color: 'border-emerald-300 bg-emerald-50/70 text-emerald-900' },
-                      { id: 'mec', label: '3. MEC / CEC (Commerce)', badge: 'CA, CS, Management & Finance', icon: Briefcase, color: 'border-amber-300 bg-amber-50/70 text-amber-900' },
-                      { id: 'arts', label: '4. Arts & Humanities (HEPS)', badge: 'Civil Services, Law & Design', icon: Scale, color: 'border-purple-300 bg-purple-50/70 text-purple-900' }
-                    ].map(stream => {
-                      const Icon = stream.icon;
-                      const isSelected = activeInterStreamTab === stream.id;
-                      return (
-                        <button
-                          key={stream.id}
-                          onClick={() => setActiveInterStreamTab(stream.id as any)}
-                          className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                            isSelected
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
-                              : `${stream.color} hover:shadow-xs`
-                          }`}
-                        >
-                          <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-brand-400' : 'opacity-80'}`} />
-                          <div>
-                            <div className="text-xs font-bold leading-tight">{stream.label}</div>
-                            <div className={`text-[10px] mt-1 ${isSelected ? 'text-slate-300' : 'opacity-75'}`}>
-                              {stream.badge}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* MPC Stream Detail Card */}
-                {activeInterStreamTab === 'mpc' && (
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-3xl border border-blue-200 p-6 sm:p-8 shadow-sm space-y-4">
-                      <div className="border-b border-slate-100 pb-3">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-                          MPC (+2 Mathematics, Physics, Chemistry) — Degree Pathways
-                        </span>
-                        <h3 className="text-xl font-bold text-slate-900 mt-2">
-                          Engineering, Technological Innovation, Architecture, and Commissioned Defense
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                        {/* BTech */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">1. B.Tech / B.E. (4 Years)</strong>
-                            <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Engineering</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Branches:</strong> CSE, AI & Machine Learning, Data Science, ECE, EEE, Mechanical, Civil, Chemical, Aerospace, Marine.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance Exams:</strong> JEE Main, JEE Advanced, BITSAT, State EAPCET / EAMCET (Andhra Pradesh / Telangana), COMEDK, VITEEE.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Top Colleges:</strong> IITs, NITs, BITS Pilani, JNTU-GV affiliated colleges (Sri Sivani College of Engineering, GMRIT), Andhra University (AU).
-                          </p>
-
-                          {/* 1-Click Launch Exact Branch Architecture Flow */}
-                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 block">
-                              ⚡ Inspect Branch Architecture Flow:
-                            </span>
-                            <div className="flex flex-wrap gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setCurrentStage('btech_1');
-                                  setBtechRoleBranchFilter('eee');
-                                  setToastMessage('Switched to EEE Architecture Flow Roadmap');
-                                  setTimeout(() => setToastMessage(null), 3000);
-                                }}
-                                className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-white font-bold text-[11px] hover:bg-amber-600 flex items-center space-x-1 shadow-2xs transition-all"
-                              >
-                                <Zap className="h-3 w-3 text-white" />
-                                <span>⚡ View EEE Architecture Flow →</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setCurrentStage('btech_1');
-                                  setBtechRoleBranchFilter('cse');
-                                  setToastMessage('Switched to CSE Architecture Flow Roadmap');
-                                  setTimeout(() => setToastMessage(null), 3000);
-                                }}
-                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
-                              >
-                                <Code2 className="h-2.5 w-2.5 text-emerald-600" />
-                                <span>💻 CSE</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setCurrentStage('btech_1');
-                                  setBtechRoleBranchFilter('aiml');
-                                  setToastMessage('Switched to AI/ML Architecture Flow Roadmap');
-                                  setTimeout(() => setToastMessage(null), 3000);
-                                }}
-                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
-                              >
-                                <Target className="h-2.5 w-2.5 text-purple-600" />
-                                <span>🤖 AI/ML</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setCurrentStage('btech_1');
-                                  setBtechRoleBranchFilter('ece');
-                                  setToastMessage('Switched to ECE Architecture Flow Roadmap');
-                                  setTimeout(() => setToastMessage(null), 3000);
-                                }}
-                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
-                              >
-                                <Cpu className="h-2.5 w-2.5 text-blue-600" />
-                                <span>📡 ECE</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Architecture */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">2. B.Arch & Planning (5 Yrs)</strong>
-                            <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-2 py-0.5 rounded">Architecture</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> Bachelor of Architecture (B.Arch - 5 Years), Bachelor of Planning (B.Plan), B.Des.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance Exams:</strong> NATA (National Aptitude Test in Architecture), JEE Main Paper-2, UCEED.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Future Careers:</strong> Licensed Architect, Urban Infrastructure Designer, Building Conservationist.
-                          </p>
-                        </div>
-
-                        {/* Pure Science & Research */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">3. Pure Science (BS-MS 5 Yrs)</strong>
-                            <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded">Research</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Institutions:</strong> IISc Bangalore, 7 IISERs (Berhampur, Pune, Mohali, etc.), NISER, CMI.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance Exams:</strong> IAT (IISER Aptitude Test), NEST (NISER), JEE Advanced.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Scientist in ISRO / DRDO / BARC, Quantum Computing, Theoretical Physics, Data Scientist.
-                          </p>
-                        </div>
-
-                        {/* Defense */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">4. Defense (NDA Officer)</strong>
-                            <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">Officer</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Wings:</strong> Indian Army, Indian Air Force (Flying Wing), Indian Navy, Indian Naval Academy.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance Exams:</strong> UPSC NDA Examination (written + SSB 5-Day Interview), 10+2 TES Cadet Entry.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Rank at Passing Out:</strong> Lieutenant / Flying Officer / Sub Lieutenant with B.Tech degree from JNU.
-                          </p>
-                        </div>
-
-                        {/* Aviation & Marine */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">5. Aviation & Merchant Navy</strong>
-                            <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Aviation</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> Commercial Pilot License (CPL via IGRUA / Cadet Pilot), B.Sc Nautical Science (IMU-CET).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Airline Pilot (IndiGo, Air India), Deck Officer / Marine Captain on International Cargo Vessels.
-                          </p>
-                        </div>
-
-                        {/* Computing & Analytics */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">6. Computer Applications</strong>
-                            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Software</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> BCA (Bachelor of Computer Applications - 3 Years), B.Sc Computer Science, Data Analytics.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Path:</strong> BCA → MCA (via NIMCET / ICET) → Software Engineer in MNCs.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* BiPC Stream Detail Card */}
-                {activeInterStreamTab === 'bipc' && (
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-3xl border border-emerald-200 p-6 sm:p-8 shadow-sm space-y-4">
-                      <div className="border-b border-slate-100 pb-3">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                          BiPC (+2 Biology, Physics, Chemistry) — Complete Degree Pathways
-                        </span>
-                        <h3 className="text-xl font-bold text-slate-900 mt-2">
-                          Medicine, Surgery, Agricultural Sciences, Pharmacy, and Allied Healthcare
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                        {/* MBBS / BDS */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">1. MBBS & BDS (Medical)</strong>
-                            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">NEET-UG</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> MBBS (5.5 Years with 1-Year Internship), BDS (Bachelor of Dental Surgery - 5 Years).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance:</strong> NEET-UG (National Eligibility cum Entrance Test).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Colleges:</strong> AIIMS Mangalagiri, Andhra Medical College (AMC), RIMS Srikakulam, Private Medical Colleges.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Next Step:</strong> NEET-PG → MD / MS Super-speciality (Cardiology, Neurology, Surgery).
-                          </p>
-                        </div>
-
-                        {/* AYUSH */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">2. AYUSH Medicine (5.5 Yrs)</strong>
-                            <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-2 py-0.5 rounded">Alternative</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Branches:</strong> BAMS (Ayurvedic Medicine), BHMS (Homeopathy), BNYS (Naturopathy & Yogic Sciences), BUMS (Unani).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance:</strong> NEET-UG AYUSH Counseling.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Registered Medical Practitioner, Wellness Centers, Ayurvedic Hospital Medical Officer.
-                          </p>
-                        </div>
-
-                        {/* Veterinary & Agriculture */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">3. Veterinary & Agriculture</strong>
-                            <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">High Demand</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> BVSc & AH (Veterinary Science - 5.5 Years), B.Sc (Hons) Agriculture (4 Years), B.Sc Horticulture, B.F.Sc (Fisheries).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance:</strong> State EAPCET (Agriculture Stream), ICAR AIEEA.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Veterinary Surgeon, Agricultural Officer (AO), Bank Agriculture Specialist Officer (IBPS SO), Seed Technologist.
-                          </p>
-                        </div>
-
-                        {/* Pharmacy */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">4. Pharmacy (B.Pharm / Pharm.D)</strong>
-                            <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">Pharma</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> B.Pharmacy (4 Years), Pharma.D (Doctor of Pharmacy - 6 Years Clinical Practice).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Entrance:</strong> State EAPCET / NEET.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Clinical Pharmacist, Drug Inspector, Formulation Scientist in Dr. Reddy&apos;s, Sun Pharma, Cipla.
-                          </p>
-                        </div>
-
-                        {/* Allied Health & Nursing */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">5. Nursing & Physiotherapy</strong>
-                            <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">Healthcare</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> B.Sc Nursing (4 Years), BPT (Bachelor of Physiotherapy - 4.5 Years), BMRIT (Radiology & Imaging).
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Hospital Staff Nurse, Sports Physiotherapist, Rehabilitation Specialist, Overseas NHS/Gulf Healthcare.
-                          </p>
-                        </div>
-
-                        {/* Biotechnology & Life Sciences */}
-                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <strong className="text-slate-900 font-bold">6. Biotechnology & Genetics</strong>
-                            <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded">Biotech</span>
-                          </div>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Degrees:</strong> B.Tech Biotechnology, B.Sc Microbiology, B.Sc Genetics, Bioinformatics.
-                          </p>
-                          <p className="text-slate-600 text-[11px]">
-                            <strong>Careers:</strong> Genetic Engineer, Vaccine Researcher (Bharat Biotech, Serum Institute), Bioinformatician.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* MEC / CEC Stream Detail Card */}
-                {activeInterStreamTab === 'mec' && (
-                  <div className="bg-white rounded-3xl border border-amber-200 p-6 sm:p-8 shadow-sm space-y-4">
-                    <div className="border-b border-slate-100 pb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
-                        MEC / CEC (Commerce & Economics) — Pathways
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        Chartered Accountancy, Corporate Law, Management & Investment Banking
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">1. Chartered Accountancy (CA)</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Path:</strong> CA Foundation → Intermediate → 3-Yr Articleship → CA Final.
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> Statutory Auditor, Chief Financial Officer (CFO), Financial Consultant.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">2. IIM 5-Year Integrated MBA (IPM)</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Entrance:</strong> IPMAT (IIM Indore, IIM Rohtak, IIM Ranchi, IIM Bodh Gaya).
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> Direct Master of Business Administration from Indian Institutes of Management.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">3. Corporate Law & CS</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Degrees:</strong> BBA LLB (5 Years via CLAT), Company Secretary (ICSI CS Foundation).
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> Corporate Legal Advisor, Company Secretary, M&A Specialist.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Arts & Humanities Stream Detail Card */}
-                {activeInterStreamTab === 'arts' && (
-                  <div className="bg-white rounded-3xl border border-purple-200 p-6 sm:p-8 shadow-sm space-y-4">
-                    <div className="border-b border-slate-100 pb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-2.5 py-0.5 rounded-full">
-                        Arts & Humanities (HEPS) — Pathways
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">
-                        National Law Universities, UPSC Civil Services Foundation, Design & Journalism
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">1. National Law Universities (BA LLB)</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Entrance:</strong> CLAT (Common Law Admission Test for 26 NLUs), AILET (NLU Delhi).
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> High Court / Supreme Court Advocate, Judicial Officer, Corporate Counsel.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">2. UPSC Civil Services (IAS / IPS / IFS)</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Degrees:</strong> BA in Political Science, History, Economics, Public Administration.
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> District Collector, Indian Police Service, Indian Foreign Service Diplomat.
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                        <strong className="text-slate-900 block font-bold">3. Design & Mass Communication</strong>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Exams:</strong> NID DAT (National Institute of Design), NIFT (Fashion), UCEED.
-                        </p>
-                        <p className="text-slate-600 text-[11px]">
-                          <strong>Outcome:</strong> Product UX Designer, Fashion Designer, Investigative Journalist.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : currentStage === 'diploma' ? (
-              /* ========================================================================= */
-              /* DIPLOMA / POLYTECHNIC: INTERACTIVE BRANCH SELECTION & ECET BLUEPRINT       */
-              /* ========================================================================= */
-              <div className="space-y-6 animate-in fade-in">
-                {/* Branch Selection Grid */}
-                <div className="bg-white rounded-3xl border border-teal-200/90 p-6 sm:p-8 shadow-sm space-y-6">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
-                      Polytechnic Diploma Branches
-                    </span>
-                    <h2 className="text-lg font-bold text-slate-900 mt-1">
-                      Choose Your Polytechnic Diploma Group / Branch:
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Click any diploma branch to inspect its State ECET lateral entry path, core subjects, PSU exams, and industrial placements.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {[
-                      { id: 'cme', label: '1. Computer (DCME)', sub: 'Software & IT', icon: Laptop, color: 'border-blue-300 bg-blue-50/70 text-blue-900' },
-                      { id: 'ece', label: '2. Electronics (DECE)', sub: 'Hardware & Telecom', icon: Cpu, color: 'border-indigo-300 bg-indigo-50/70 text-indigo-900' },
-                      { id: 'eee', label: '3. Electrical (DEEE)', sub: 'Power Machines & EV', icon: Zap, color: 'border-amber-300 bg-amber-50/70 text-amber-900' },
-                      { id: 'mech', label: '4. Mechanical (DME)', sub: 'Manufacturing & CAD', icon: Wrench, color: 'border-rose-300 bg-rose-50/70 text-rose-900' },
-                      { id: 'civil', label: '5. Civil (DCE)', sub: 'Construction & Survey', icon: Building2, color: 'border-emerald-300 bg-emerald-50/70 text-emerald-900' },
-                      { id: 'auto', label: '6. Automobile (DAE)', sub: 'Automotive & Engines', icon: Shield, color: 'border-teal-300 bg-teal-50/70 text-teal-900' }
-                    ].map(branch => {
-                      const Icon = branch.icon;
-                      const isSelected = activeDiplomaBranch === branch.id;
-                      return (
-                        <button
-                          key={branch.id}
-                          onClick={() => setActiveDiplomaBranch(branch.id as any)}
-                          className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                            isSelected
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
-                              : `${branch.color} hover:shadow-xs`
-                          }`}
-                        >
-                          <Icon className={`h-5 w-5 mb-2 ${isSelected ? 'text-brand-400' : 'opacity-80'}`} />
-                          <div>
-                            <div className="text-xs font-bold leading-tight">{branch.label}</div>
-                            <div className={`text-[10px] mt-1 ${isSelected ? 'text-slate-300' : 'opacity-75'}`}>
-                              {branch.sub}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Selected Diploma Branch Deep-Dive */}
-                {DIPLOMA_BRANCH_DETAILS[activeDiplomaBranch] && (() => {
-                  const data = DIPLOMA_BRANCH_DETAILS[activeDiplomaBranch];
-                  return (
-                    <div className="space-y-6">
-                      {/* Gateway 1: State ECET Lateral Entry */}
-                      <div className="bg-white rounded-3xl border border-teal-200 p-6 sm:p-8 shadow-sm space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">
-                              Gateway 1: State ECET Lateral Entry (B.Tech 2nd Year)
-                            </span>
-                            <h3 className="text-xl font-bold text-slate-900 mt-2">
-                              {data.name || data.label} → B.Tech Lateral Entry Blueprint
-                            </h3>
-                          </div>
-                          <span className="px-3 py-1 rounded-xl bg-teal-600 text-white font-bold text-xs shrink-0 self-start sm:self-auto">
-                            Direct 2nd Year B.Tech Entry
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
-                            <strong className="text-teal-950 block font-bold">Lateral Admission Target</strong>
-                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.lateral_seat}</p>
-                          </div>
-                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
-                            <strong className="text-teal-950 block font-bold">Top University Colleges</strong>
-                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.top_colleges}</p>
-                          </div>
-                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
-                            <strong className="text-teal-950 block font-bold">State ECET Rank Benchmark</strong>
-                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.rank_target}</p>
-                          </div>
-                          <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/40 space-y-1">
-                            <strong className="text-teal-950 block font-bold">Strategic Advantage</strong>
-                            <p className="text-slate-600 text-[11px]">{data.ecet_bridge.advantage}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Gateway 2: Core Subjects & Labs */}
-                      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
-                        <div className="border-b border-slate-100 pb-3">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                            Gateway 2: Core Technical Curriculum & Practical Labs
-                          </span>
-                          <h3 className="text-lg font-bold text-slate-900 mt-2">
-                            Key Subjects & Hands-on Workshop Modules
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                          {data.core_subjects.map(sub => (
-                            <div key={sub.name} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                              <strong className="text-slate-900 block font-bold">{sub.name}</strong>
-                              <p className="text-slate-600 text-[11px] leading-relaxed">{sub.desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Gateway 3 & 4: PSU Govt Jobs + Industrial Recruiters */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* PSU Govt Jobs */}
-                        <div className="bg-white rounded-3xl border border-emerald-200 p-6 shadow-sm space-y-4">
-                          <div className="border-b border-slate-100 pb-3">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                              Gateway 3: Central & State Govt PSUs
-                            </span>
-                            <h3 className="text-base font-bold text-slate-900 mt-2">
-                              Government Junior Engineer & Technical Appointments
-                            </h3>
-                          </div>
-                          <div className="space-y-2.5 text-xs">
-                            {data.psu_govt_jobs.map(job => (
-                              <div key={job.org} className="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
-                                <div>
-                                  <strong className="text-emerald-950 block">{job.org}</strong>
-                                  <span className="text-slate-600 text-[11px]">{job.role}</span>
-                                </div>
-                                <span className="text-[11px] font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
-                                  {job.salary}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Private Recruiters */}
-                        <div className="bg-white rounded-3xl border border-blue-200 p-6 shadow-sm space-y-4">
-                          <div className="border-b border-slate-100 pb-3">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-                              Gateway 4: Private Industrial Campus Placements
-                            </span>
-                            <h3 className="text-base font-bold text-slate-900 mt-2">
-                              Major Recruiters & Apprenticeship Sponsors
-                            </h3>
-                          </div>
-                          <div className="flex flex-wrap gap-2 text-xs pt-1">
-                            {data.industry_recruiters.map(company => (
-                              <span key={company} className="px-3 py-2 rounded-xl border border-blue-200 bg-blue-50/50 text-blue-950 font-bold text-[11px]">
-                                {company}
-                              </span>
-                            ))}
-                          </div>
-                          <p className="text-[11px] text-slate-500 mt-2">
-                            Annual campus placements offer trainee engineer positions with fast-track promotion upon completing B.Tech via distance or evening colleges.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Gateway 5: 3-Year Action Plan */}
-                      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
-                        <div className="border-b border-slate-100 pb-3">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                            Gateway 5: 3-Year Strategic Milestone Plan
-                          </span>
-                          <h3 className="text-lg font-bold text-slate-900 mt-2">
-                            From 1st Year Fundamentals to 3rd Year ECET Rank & Industry Placement
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                          {data.three_year_plan.map(step => (
-                            <div key={step.year} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
-                              <strong className="text-brand-700 font-bold block">{step.year}</strong>
-                              <p className="text-slate-600 text-[11px] leading-relaxed">{step.focus}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            ) : (
-              /* B.TECH 4-YEAR STRUCTURED BRANCH ROADMAP & SYLLABUS */
-              <BTechBranchRoadmapView
-                selectedBranch={btechRoleBranchFilter === "all" ? "eee" : btechRoleBranchFilter}
-                onBranchChange={setBtechRoleBranchFilter}
-              />
-            )}
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* SECTION 2: STUDY PLANNER & STUDENT SELF-ANALYSIS DASHBOARD TRACKER         */}
-        {/* ========================================================================= */}
-        {activePortal === 'planner' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Header */}
-            <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-[11px] font-bold uppercase tracking-wider mb-2">
-                  <BarChart3 className="h-3.5 w-3.5 text-brand-600" />
-                  <span>Dedicated Section 2: Student Self-Analysis Dashboard & Focus Tracker</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  Student Study Dashboard & Precision Tracker
-                </h1>
-                <p className="text-xs text-slate-500 mt-1">
-                  Analyze your daily learning efficiency, track study streak, launch live focus stopwatches, and customize your study schedule.
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="flex items-center space-x-1.5 rounded-xl border border-brand-300 bg-brand-50 px-3.5 py-2 text-xs font-bold text-brand-800 hover:bg-brand-100 transition-colors shadow-2xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>+ Add Custom Subject</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (currentStage === 'class_10' || currentStage === 'class_9') {
-                      setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
-                    } else {
-                      setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-                    }
-                    setToastMessage('Auto-balanced standard study timetable.');
-                    setTimeout(() => setToastMessage(null), 3000);
-                  }}
-                  className="flex items-center space-x-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Auto-Balance</span>
-                </button>
-
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center space-x-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors shadow-2xs"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Delete / Reset Plan</span>
-                </button>
-              </div>
-            </div>
-
-            {/* SELF-ANALYSIS COCKPIT: METRICS CARDS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Daily Target Progress */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Today&apos;s Study Target</span>
-                  <Target className="h-4 w-4 text-brand-600" />
+      {/* Interactive Document Preview Modal */}
+      {previewPdfUrl && (
+        <div className="fixed inset-0 z-50 bg-[#0b1c30]/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl shadow-2xl border border-[#e5eeff] w-full max-w-5xl h-[88vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#e5eeff] flex items-center justify-between bg-[#f8f9ff] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#3525cd] text-white flex items-center justify-center">
+                  <FileText className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-slate-900">
-                    {(studiedMinutesToday / 60).toFixed(1)}h <span className="text-xs text-slate-400 font-semibold">/ {(dailyMinutesTarget / 60).toFixed(1)}h</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2.5 mt-2 overflow-hidden">
-                    <div
-                      className="bg-brand-600 h-2.5 rounded-full transition-all duration-500"
-                      style={{ width: `${targetProgressPercentage}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate-500 flex items-center justify-between">
-                  <span>{targetProgressPercentage}% Achieved</span>
-                  <span className="font-semibold text-emerald-600">On Track</span>
-                </div>
-              </div>
-
-              {/* Study Streak */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Consistency Streak</span>
-                  <Flame className="h-4 w-4 text-amber-500 fill-amber-500" />
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-slate-900 flex items-center space-x-1">
-                    <span>5 Days</span>
-                    <span className="text-xs text-amber-500">🔥</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Active study streak. Target: 7 days without break.
-                  </p>
-                </div>
-                <div className="text-[11px] text-emerald-600 font-semibold">
-                  Personal Best: 12 Days
-                </div>
-              </div>
-
-              {/* Focus Rate / Efficiency */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Focus Efficiency</span>
-                  <Activity className="h-4 w-4 text-emerald-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-slate-900">92%</div>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Calculated from active timer duration vs pause intervals.
-                  </p>
-                </div>
-                <div className="text-[11px] text-emerald-600 font-semibold flex items-center space-x-1">
-                  <TrendingUp className="h-3 w-3" />
-                  <span>High Concentration Zone</span>
-                </div>
-              </div>
-
-              {/* Session Completion Rate */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Schedule Completion</span>
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-slate-900">
-                    {completedCount} <span className="text-xs text-slate-400 font-semibold">/ {totalSubjectsCount} Finished</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2.5 mt-2 overflow-hidden">
-                    <div
-                      className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
-                      style={{ width: `${completionPercentage}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  {completionPercentage}% of planned sessions checked off
-                </div>
-              </div>
-            </div>
-
-            {/* Delete Plan Confirmation Modal */}
-            {showDeleteConfirm && (
-              <div className="p-5 rounded-2xl border-2 border-rose-300 bg-rose-50 space-y-3 animate-in fade-in">
-                <div className="flex items-center space-x-2 text-rose-900 font-bold text-sm">
-                  <AlertCircle className="h-5 w-5 text-rose-600" />
-                  <span>Are you sure you want to delete and reset your study plan?</span>
-                </div>
-                <p className="text-xs text-rose-700 leading-relaxed">
-                  This will immediately remove all current daily session allocations. Your schedule will be completely cleared so you can add your custom subjects or generate a fresh plan.
-                </p>
-                <div className="flex items-center space-x-3 pt-2">
-                  <button
-                    onClick={handleDeletePlan}
-                    className="px-4 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-500 shadow-sm"
-                  >
-                    Yes, Delete Plan Now
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Add Manual Subject Modal */}
-            {showAddModal && (
-              <div className="p-6 rounded-3xl border border-brand-200 bg-white shadow-md space-y-4 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                    <BookOpen className="h-4 w-4 text-brand-600" />
-                    <span>Add Custom Subject to Study Timetable</span>
-                  </h2>
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="text-xs text-slate-400 hover:text-slate-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Subject Name</label>
-                    <input
-                      type="text"
-                      value={newSubName}
-                      onChange={e => setNewSubName(e.target.value)}
-                      placeholder="e.g. Sanskrit / Physics Revision"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Subject Code (Optional)</label>
-                    <input
-                      type="text"
-                      value={newSubCode}
-                      onChange={e => setNewSubCode(e.target.value)}
-                      placeholder="e.g. SUB-01"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Duration</label>
-                    <select
-                      value={newSubDuration}
-                      onChange={e => setNewSubDuration(Number(e.target.value))}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 bg-white"
-                    >
-                      <option value={30}>30 Minutes</option>
-                      <option value={45}>45 Minutes</option>
-                      <option value={50}>50 Minutes (Standard)</option>
-                      <option value={60}>60 Minutes Deep Focus</option>
-                      <option value={90}>90 Minutes Extended</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Time Slot Label</label>
-                    <input
-                      type="text"
-                      value={newSubTime}
-                      onChange={e => setNewSubTime(e.target.value)}
-                      placeholder="e.g. 06:00 PM - 06:50 PM"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-1">
-                  <button
-                    type="button"
-                    onClick={handleAddManualSession}
-                    disabled={!newSubName.trim()}
-                    className="flex items-center space-x-1.5 rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Insert to Schedule</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Embedded Active Focus Stopwatch (Live Study Tracker) */}
-            {activeTimerSession && (
-              <div className="p-6 rounded-3xl border-2 border-brand-500 bg-slate-900 text-white shadow-xl space-y-4 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="flex h-3 w-3 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Study Focus Timer</span>
-                  </div>
-                  <span className="text-xs text-slate-400 font-mono">{activeTimerSession.subject_code}</span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{activeTimerSession.subject_name}</h3>
-                    <p className="text-xs text-slate-400 mt-1">Planned: {activeTimerSession.planned_minutes}m ({activeTimerSession.time_slot})</p>
-                  </div>
-                  <div className="text-4xl font-extrabold font-mono text-emerald-400 tracking-wider">
-                    {formatSeconds(timerSeconds)}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
-                  <input
-                    type="text"
-                    value={timerNotes}
-                    onChange={e => setTimerNotes(e.target.value)}
-                    placeholder="Self-analysis note: what did you practice in this session?..."
-                    className="flex-1 min-w-[200px] rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
-                  />
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setTimerRunning(!timerRunning)}
-                      className="flex items-center space-x-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-xs font-bold text-white transition-colors"
-                    >
-                      {timerRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                      <span>{timerRunning ? 'Pause' : 'Resume'}</span>
-                    </button>
-                    <button
-                      onClick={stopAndLogTimer}
-                      className="flex items-center space-x-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-bold text-white transition-colors"
-                    >
-                      <Square className="h-3.5 w-3.5 fill-white" />
-                      <span>Complete & Log Session</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Daily Schedule Checklist & Session Cards */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Today&apos;s Interactive Study Timetable</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Click checkboxes to mark sessions done, or launch the stopwatch to log actual focus time.
-                  </p>
-                </div>
-                <div className="text-xs font-bold text-slate-500 flex items-center space-x-2">
-                  <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
-                    {totalPlannedStudyMinutes}m Study
-                  </span>
-                  <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700">
-                    {totalBreakMinutes}m Breaks
-                  </span>
-                </div>
-              </div>
-
-              {allocations.length > 0 ? (
-                <div className="space-y-3">
-                  {allocations.map((alloc, idx) => {
-                    const isDone = completedSessions[alloc.subject_id];
-                    return (
-                      <div
-                        key={idx}
-                        className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                          alloc.is_break
-                            ? 'border-slate-200 bg-slate-50/70'
-                            : isDone
-                            ? 'border-emerald-200 bg-emerald-50/30'
-                            : 'border-brand-200/80 bg-brand-50/30'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          {/* Done Checkbox */}
-                          {!alloc.is_break ? (
-                            <button
-                              onClick={() => toggleSessionCompleted(alloc.subject_id)}
-                              className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors ${
-                                isDone ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 hover:border-slate-400 bg-white'
-                              }`}
-                              title={isDone ? 'Mark as incomplete' : 'Mark as completed'}
-                            >
-                              {isDone && <Check className="h-4 w-4 stroke-[3]" />}
-                            </button>
-                          ) : (
-                            <div className="h-6 w-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
-                              <Coffee className="h-3.5 w-3.5" />
-                            </div>
-                          )}
-
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <h4 className={`text-xs font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                                {alloc.subject_name}
-                              </h4>
-                              {!alloc.is_break && (
-                                <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                                  ({alloc.subject_code})
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] font-mono text-slate-500">{alloc.time_slot}</span>
-                          </div>
-                        </div>
-
-                        {/* Duration & Start Controls */}
-                        <div className="flex items-center space-x-2.5 self-end sm:self-center">
-                          <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1">
-                            <button
-                              onClick={() => adjustMinutes(idx, -15)}
-                              className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                              title="Subtract 15 mins"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="text-xs font-bold font-mono text-slate-800 px-1.5">
-                              {alloc.planned_minutes}m
-                            </span>
-                            <button
-                              onClick={() => adjustMinutes(idx, 15)}
-                              className="p-1 rounded text-slate-500 hover:bg-slate-100"
-                              title="Add 15 mins"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
-
-                          {!alloc.is_break && (
-                            <button
-                              onClick={() => startTimer(alloc)}
-                              className="flex items-center space-x-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-colors"
-                            >
-                              <Play className="h-3 w-3 fill-white" />
-                              <span>Start Timer</span>
-                            </button>
-                          )}
-
-                          <button
-                            onClick={() => handleRemoveSession(idx)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                            title="Remove session"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-16 px-4 space-y-4">
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                    <Calendar className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800">Your Study Timetable is Completely Clear</h4>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                      No active sessions. Click &quot;+ Add Custom Subject&quot; or &quot;Auto-Balance Schedule&quot; to build your plan.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center space-x-3 pt-2">
-                    <button
-                      onClick={() => setShowAddModal(true)}
-                      className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 shadow-sm"
-                    >
-                      + Add Custom Subject
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (currentStage === 'class_10' || currentStage === 'class_9') {
-                          setAllocations(DEFAULT_CLASS_10_ALLOCATIONS);
-                        } else {
-                          setAllocations(DEFAULT_BTECH_1_ALLOCATIONS);
-                        }
-                      }}
-                      className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs hover:bg-slate-50"
-                    >
-                      Auto-Balance 4 Hours
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Self-Reflection Journal */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                <Sparkles className="h-4 w-4 text-brand-600" />
-                <span>Daily Self-Analysis & Reflection Note</span>
-              </h3>
-              <p className="text-xs text-slate-500">
-                Write down key topics understood today, problem areas to revise, and plan your focus for tomorrow:
-              </p>
-              <textarea
-                value={todayReflection}
-                onChange={e => setTodayReflection(e.target.value)}
-                placeholder="Today I mastered quadratic equations and solved 10 problems on Newton's second law. Tomorrow need to revise organic reactions..."
-                rows={3}
-                className="w-full rounded-2xl border border-slate-200 p-3.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-              <div className="flex justify-end">
-                <button
-                  onClick={() => {
-                    setToastMessage('Self-reflection journal saved.');
-                    setTimeout(() => setToastMessage(null), 3000);
-                  }}
-                  className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800"
-                >
-                  Save Reflection
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* SECTION 3: STUDY RESOURCES — EXCLUSIVELY FOR B.TECH ENGINEERING           */}
-        {/* ========================================================================= */}
-        {activePortal === 'resources' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Header */}
-            <div className="border-b border-slate-200 pb-5">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider mb-2">
-                <BookOpen className="h-3.5 w-3.5 text-brand-400" />
-                <span>Dedicated Section 3: BTech Engineering Resources Only</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                BTech University Syllabi, Question Papers & Lab Manuals
-              </h1>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-4xl">
-                Official repository for undergraduate B.Tech engineering students across JNTU-GV, JNTUK, JNTUH, Andhra University, and affiliated colleges (R23, R20 schemes).
-              </p>
-            </div>
-
-            {/* University & College Selector */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div className="flex items-center space-x-2">
-                  <Building2 className="h-4 w-4 text-brand-600 shrink-0" />
-                  <span className="text-xs font-bold text-slate-800">Affiliated University / College:</span>
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {[
-                    { id: 'jntugv', label: 'JNTU-GV (incl. Sri Sivani College of Engg)' },
-                    { id: 'jntuk', label: 'JNTUK Kakinada' },
-                    { id: 'au', label: 'Andhra University (AU)' },
-                    { id: 'jntuh', label: 'JNTUH Hyderabad' }
-                  ].map(u => (
-                    <button
-                      key={u.id}
-                      onClick={() => setSelectedUniversity(u.id)}
-                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                        selectedUniversity === u.id
-                          ? 'bg-slate-900 text-white shadow-sm'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {u.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Branch & Type Filters */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1">
-                {/* Branch Badges */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {[
-                    { id: 'all', label: 'All Branches' },
-                    { id: 'cse', label: 'CSE (Computer Science)' },
-                    { id: 'aiml', label: 'AI & Machine Learning' },
-                    { id: 'ece', label: 'ECE (Electronics)' },
-                    { id: 'eee', label: 'EEE (Electrical)' },
-                    { id: 'mech', label: 'Mechanical' },
-                    { id: 'civil', label: 'Civil' }
-                  ].map(br => (
-                    <button
-                      key={br.id}
-                      onClick={() => setSelectedBtechBranch(br.id)}
-                      className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
-                        selectedBtechBranch === br.id
-                          ? 'bg-brand-600 text-white shadow-sm font-bold'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      {br.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Search */}
-                <div className="relative min-w-[260px]">
-                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={btechSearch}
-                    onChange={e => setBtechSearch(e.target.value)}
-                    placeholder="Search BTech subject, code (e.g. M1, PPS, R23)..."
-                    className="w-full rounded-xl border border-slate-200 pl-8 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Resources Cards Grid */}
-            {filteredBtechResources.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredBtechResources.map(res => (
-                  <div
-                    key={res.id}
-                    className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
-                          {res.resource_type.replace('_', ' ')}
-                        </span>
-                        <span className="text-[11px] text-slate-400 font-mono font-semibold">
-                          {res.regulation || 'R23 Regulation'}
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm font-bold text-slate-900 leading-snug">{res.title}</h3>
-                      <p className="text-xs text-slate-500 mt-2 flex items-center space-x-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                        <span>Source: {res.source_contributor || 'University Board'}</span>
-                      </p>
-                    </div>
-
-                    <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-2">
-                      <span className="text-slate-400 text-[11px] flex items-center space-x-1">
-                        <FileText className="h-3.5 w-3.5 text-slate-400" />
-                        <span>Verified Engineering PDF</span>
-                      </span>
-
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => setSelectedPreviewDoc(res)}
-                          className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors"
-                          title="Interactive Document Preview"
-                        >
-                          <Eye className="h-3.5 w-3.5 text-slate-600" />
-                          <span>Preview</span>
-                        </button>
-
-                        <a
-                          href={res.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-2xs"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          <span>Open PDF</span>
-                        </a>
-
-                        <a
-                          href={res.file_url}
-                          download={res.file_url.split('/').pop() || `${res.id}.pdf`}
-                          className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          title="Download File"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
-                <BookOpen className="h-10 w-10 text-slate-300 mx-auto" />
-                <h4 className="text-sm font-bold text-slate-800">No BTech resources found matching filter</h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Try clearing search query or switching branch filter.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedBtechBranch('all');
-                    setSelectedBtechType('');
-                    setBtechSearch('');
-                  }}
-                  className="px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
-
-      {/* Interactive Academic Document Viewer Modal */}
-      {selectedPreviewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-              <div className="flex items-center space-x-2.5">
-                <FileText className="h-5 w-5 text-brand-400" />
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-brand-300">
-                    Official University Academic Document Preview
+                  <h3 className="text-sm font-bold text-[#0b1c30]">
+                    {previewPdfTitle || 'Official Syllabus Blueprint'}
                   </h3>
-                  <p className="text-sm font-bold text-white line-clamp-1">
-                    {selectedPreviewDoc.title}
+                  <p className="text-[11px] text-[#464555] font-mono">
+                    {previewPdfUrl}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setSelectedPreviewDoc(null)}
-                className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
 
-            {/* Document Body (Authentic Academic Sheet View) */}
-            <div className="p-6 overflow-y-auto space-y-6 bg-slate-50">
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-center">
-                <div className="border-b border-slate-100 pb-3">
-                  <span className="text-[10px] font-extrabold tracking-widest text-brand-700 uppercase">
-                    JAWAHARLAL NEHRU TECHNOLOGICAL UNIVERSITY GURAJADA VIZIANAGARAM
-                  </span>
-                  <h4 className="text-xs font-bold text-slate-800 mt-0.5">
-                    SRI SIVANI COLLEGE OF ENGINEERING · AFFILIATED INSTITUTION
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Regulation: <span className="font-semibold text-slate-700">{selectedPreviewDoc.regulation || 'R23'}</span> · Department of {selectedPreviewDoc.branch_code?.toUpperCase()} · Semester {selectedPreviewDoc.semester || '1'}
-                  </p>
-                </div>
-
-                <div className="text-left space-y-3">
-                  <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Document Status</span>
-                      <span className="font-bold text-emerald-700 flex items-center space-x-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Verified Official Academic Record</span>
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Digital SHA-256</span>
-                      <span className="font-mono text-[11px] text-slate-600">e8b9c71a34d09f7e</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      Curricular Overview & Prescribed Syllabus
-                    </h5>
-                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2 leading-relaxed">
-                      <p>
-                        <strong>Unit I - Foundations & Core Theory:</strong> Principles, fundamental laws, physical configurations, mathematical formulation, and elementary boundary problems.
-                      </p>
-                      <p>
-                        <strong>Unit II - Applied Analysis & Analytical Formulations:</strong> Step-by-step mathematical reductions, state matrices, coordinate transformations, and equilibrium evaluations.
-                      </p>
-                      <p>
-                        <strong>Unit III - Laboratory & Computational Models:</strong> Standard experimentation protocols, error corrections, code algorithms, and hardware test validations.
-                      </p>
-                      <p>
-                        <strong>Unit IV - Industry & Practical Implementation:</strong> Modern engineering tools, design standards (IS/IEEE), real-world case studies, and safety protocols.
-                      </p>
-                      <p>
-                        <strong>Unit V - Examination Blueprint & Question Matrix:</strong> Part A (10 Short Answers, 20 Marks) + Part B (5 Long Essays with Internal Unit Choice, 50 Marks).
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer Controls */}
-            <div className="px-6 py-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs text-slate-500 font-mono">
-                Target File: {selectedPreviewDoc.file_url.split('/').pop()}
-              </span>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50"
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span>Print</span>
-                </button>
+              <div className="flex items-center gap-2">
                 <a
-                  href={selectedPreviewDoc.file_url}
-                  download={selectedPreviewDoc.file_url.split('/').pop() || `${selectedPreviewDoc.id}.pdf`}
-                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50"
+                  href={previewPdfUrl}
+                  download
+                  className="px-3.5 py-1.5 rounded-xl bg-[#3525cd] text-white text-xs font-bold hover:bg-[#4f46e5] flex items-center gap-1"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  <span>Download File</span>
+                  <span>Download</span>
                 </a>
-                <a
-                  href={selectedPreviewDoc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-2xs"
+                <button
+                  onClick={() => setPreviewPdfUrl(null)}
+                  className="p-2 rounded-xl text-[#464555] hover:text-[#0b1c30] hover:bg-[#eff4ff]"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span>Open Native PDF in New Tab</span>
-                </a>
+                  <X className="h-5 w-5" />
+                </button>
               </div>
+            </div>
+
+            <div className="flex-1 bg-[#eff4ff] relative">
+              <iframe
+                src={`${previewPdfUrl}#toolbar=1&navpanes=0`}
+                className="w-full h-full border-0"
+                title={previewPdfTitle || 'Syllabus Preview'}
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* Clean Minimalist Footer */}
-      <footer className="border-t border-slate-200/80 bg-white py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
-          <p>© 2026 Study Blueprint. High-performance academic and career operating system for Indian students.</p>
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setActivePortal('careers')} className="hover:text-slate-700 font-semibold">1. Career Roadmaps</button>
-            <button onClick={() => setActivePortal('planner')} className="hover:text-slate-700 font-semibold">2. Study Planner & Tracker</button>
-            <button onClick={() => setActivePortal('resources')} className="hover:text-slate-700 font-semibold">3. BTech Study Resources</button>
-            <Link href="/profile" className="hover:text-slate-700 font-semibold">Profile Settings</Link>
+      {/* Add Custom Subject Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-[#0b1c30]/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border border-[#e5eeff] shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#0b1c30]">Add Custom Study Subject</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-[#464555]">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Subject Title</label>
+                <input
+                  type="text"
+                  value={newSubName}
+                  onChange={e => setNewSubName(e.target.value)}
+                  placeholder="e.g. Electric Vehicle Powertrain Modeling"
+                  className="w-full p-2.5 rounded-xl border border-[#dce9ff] bg-[#eff4ff]/40"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1">Subject Code / Topic Tag</label>
+                <input
+                  type="text"
+                  value={newSubCode}
+                  onChange={e => setNewSubCode(e.target.value)}
+                  placeholder="e.g. R23-EE-EV401"
+                  className="w-full p-2.5 rounded-xl border border-[#dce9ff] bg-[#eff4ff]/40"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold block mb-1">Duration (Mins)</label>
+                  <input
+                    type="number"
+                    value={newSubDuration}
+                    onChange={e => setNewSubDuration(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-[#dce9ff] bg-[#eff4ff]/40"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Time Slot</label>
+                  <input
+                    type="text"
+                    value={newSubTime}
+                    onChange={e => setNewSubTime(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-[#dce9ff] bg-[#eff4ff]/40"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#464555]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!newSubName.trim()) return;
+                  const newSession: TimetableAllocation = {
+                    subject_id: `custom_${Date.now()}`,
+                    subject_name: newSubName.trim(),
+                    subject_code: newSubCode.trim() || 'CUSTOM',
+                    planned_minutes: newSubDuration || 45,
+                    time_slot: newSubTime || '04:00 PM - 04:45 PM',
+                    session_order: timetable.length + 1,
+                    is_break: false
+                  };
+                  setTimetable([...timetable, newSession]);
+                  setShowAddModal(false);
+                  setNewSubName('');
+                  setNewSubCode('');
+                  setToastMessage(`Added "${newSession.subject_name}" to schedule.`);
+                  setTimeout(() => setToastMessage(null), 3000);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#3525cd] text-white text-xs font-bold"
+              >
+                Add Subject
+              </button>
+            </div>
           </div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }
