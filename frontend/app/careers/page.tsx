@@ -27,6 +27,7 @@ import {
   Scale,
   Award,
   Zap,
+  Target,
   FolderGit2
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -41,7 +42,7 @@ const EDUCATION_STAGES = [
   { id: 'class_10', label: 'Class 10 (Secondary Board)', desc: 'Board exam, stream decision & What Next After 10th pathways' },
   { id: 'class_9', label: 'Class 9 (Secondary School)', desc: 'NCERT foundation, Olympiads & 10th stream preparation' },
   { id: 'diploma', label: 'Diploma / Polytechnic', desc: 'Practical hands-on technical foundation & ECET lateral entry' },
-  { id: 'btech_1', label: 'BTech 1st Year (Engineering)', desc: 'Engineering core, programming & industry career roadmaps' }
+  { id: 'btech_1', label: 'BTech Engineering (EEE, CSE, ECE...)', desc: 'Engineering core, programming & industry career roadmaps' }
 ];
 
 export default function CareersPage() {
@@ -226,6 +227,55 @@ export default function CareersPage() {
                       <p className="text-slate-600 text-[11px]">
                         <strong>Top Colleges:</strong> IITs, NITs, BITS Pilani, JNTU-GV affiliated colleges (Sri Sivani College of Engineering, GMRIT), Andhra University (AU).
                       </p>
+
+                      {/* 1-Click Launch Exact Branch Architecture Flow */}
+                      <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 block">
+                          ⚡ Inspect Branch Architecture Flow:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => {
+                              setSelectedStage('btech_1');
+                              setBtechRoleBranchFilter('eee');
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-white font-bold text-[11px] hover:bg-amber-600 flex items-center space-x-1 shadow-2xs transition-all"
+                          >
+                            <Zap className="h-3 w-3 text-white" />
+                            <span>⚡ View EEE Architecture Flow →</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStage('btech_1');
+                              setBtechRoleBranchFilter('cse');
+                            }}
+                            className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                          >
+                            <Code2 className="h-2.5 w-2.5 text-emerald-600" />
+                            <span>💻 CSE</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStage('btech_1');
+                              setBtechRoleBranchFilter('aiml');
+                            }}
+                            className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                          >
+                            <Target className="h-2.5 w-2.5 text-purple-600" />
+                            <span>🤖 AI/ML</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStage('btech_1');
+                              setBtechRoleBranchFilter('ece');
+                            }}
+                            className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                          >
+                            <Cpu className="h-2.5 w-2.5 text-blue-600" />
+                            <span>📡 ECE</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Architecture */}
@@ -303,7 +353,7 @@ export default function CareersPage() {
                         <strong>Degrees:</strong> BCA (Bachelor of Computer Applications - 3 Years), B.Sc Computer Science, Data Analytics.
                       </p>
                       <p className="text-slate-600 text-[11px]">
-                        <strong>Path:</strong> BCA $\rightarrow$ MCA (via NIMCET / ICET) $\rightarrow$ Software Engineer in MNCs.
+                        <strong>Path:</strong> BCA → MCA (via NIMCET / ICET) → Software Engineer in MNCs.
                       </p>
                     </div>
                   </div>
@@ -341,7 +391,7 @@ export default function CareersPage() {
                         <strong>Colleges:</strong> AIIMS Mangalagiri, Andhra Medical College (AMC), RIMS Srikakulam, Private Medical Colleges.
                       </p>
                       <p className="text-slate-600 text-[11px]">
-                        <strong>Next Step:</strong> NEET-PG $\rightarrow$ MD / MS Super-speciality (Cardiology, Neurology, Surgery).
+                        <strong>Next Step:</strong> NEET-PG → MD / MS Super-speciality (Cardiology, Neurology, Surgery).
                       </p>
                     </div>
 
@@ -444,7 +494,7 @@ export default function CareersPage() {
                   <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                     <strong className="text-slate-900 block font-bold">1. Chartered Accountancy (CA)</strong>
                     <p className="text-slate-600 text-[11px]">
-                      <strong>Path:</strong> CA Foundation $\rightarrow$ Intermediate $\rightarrow$ 3-Yr Articleship $\rightarrow$ CA Final.
+                      <strong>Path:</strong> CA Foundation → Intermediate → 3-Yr Articleship → CA Final.
                     </p>
                     <p className="text-slate-600 text-[11px]">
                       <strong>Outcome:</strong> Statutory Auditor, Chief Financial Officer (CFO), Financial Consultant.
@@ -585,15 +635,15 @@ export default function CareersPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-2">
                     <h4 className="text-xs font-bold text-blue-950">Science (MPC / BiPC)</h4>
-                    <p className="text-slate-600">JEE, NEET, BITSAT, State EAPCET $\rightarrow$ BTech, MBBS, BDS, Pharmacy.</p>
+                    <p className="text-slate-600">JEE, NEET, BITSAT, State EAPCET → BTech, MBBS, BDS, Pharmacy.</p>
                   </div>
                   <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/40 space-y-2">
                     <h4 className="text-xs font-bold text-amber-950">Commerce (MEC / CEC)</h4>
-                    <p className="text-slate-600">CA Foundation, CS, CMA, IPMAT $\rightarrow$ Chartered Accountant, IIM MBA.</p>
+                    <p className="text-slate-600">CA Foundation, CS, CMA, IPMAT → Chartered Accountant, IIM MBA.</p>
                   </div>
                   <div className="p-4 rounded-xl border border-purple-200 bg-purple-50/40 space-y-2">
                     <h4 className="text-xs font-bold text-purple-950">Arts & Humanities</h4>
-                    <p className="text-slate-600">CLAT, CUET, NID, UPSC $\rightarrow$ High Court Advocate, IAS / IPS.</p>
+                    <p className="text-slate-600">CLAT, CUET, NID, UPSC → High Court Advocate, IAS / IPS.</p>
                   </div>
                 </div>
               </div>

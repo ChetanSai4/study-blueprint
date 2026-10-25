@@ -68,7 +68,7 @@ const STAGES = [
   { id: 'class_9', label: 'Class 9 (Secondary School)', badge: 'School Foundation' },
   { id: 'intermediate', label: 'Intermediate (+2 MPC / BiPC)', badge: 'Junior College' },
   { id: 'diploma', label: 'Diploma / Polytechnic', badge: 'Technical Diploma' },
-  { id: 'btech_1', label: 'BTech 1st Year (Engineering)', badge: 'University BTech' }
+  { id: 'btech_1', label: 'BTech Engineering (EEE, CSE, ECE...)', badge: 'University BTech' }
 ];
 
 // Pre-configured standard academic schedules
@@ -526,8 +526,8 @@ export default function UnifiedPlatformHome() {
         </div>
       </header>
 
-      {/* Academic Class Switcher for Career Roadmaps & Study Planner */}
-      {activePortal !== 'resources' && (
+      {/* Academic Class Switcher for Career Roadmaps Only */}
+      {activePortal === 'careers' && (
         <div className="bg-slate-900 text-white border-b border-slate-800 py-2.5 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-2">
@@ -1019,6 +1019,63 @@ export default function UnifiedPlatformHome() {
                           <p className="text-slate-600 text-[11px]">
                             <strong>Top Colleges:</strong> IITs, NITs, BITS Pilani, JNTU-GV affiliated colleges (Sri Sivani College of Engineering, GMRIT), Andhra University (AU).
                           </p>
+
+                          {/* 1-Click Launch Exact Branch Architecture Flow */}
+                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 block">
+                              ⚡ Inspect Branch Architecture Flow:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setCurrentStage('btech_1');
+                                  setBtechRoleBranchFilter('eee');
+                                  setToastMessage('Switched to EEE Architecture Flow Roadmap');
+                                  setTimeout(() => setToastMessage(null), 3000);
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-white font-bold text-[11px] hover:bg-amber-600 flex items-center space-x-1 shadow-2xs transition-all"
+                              >
+                                <Zap className="h-3 w-3 text-white" />
+                                <span>⚡ View EEE Architecture Flow →</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCurrentStage('btech_1');
+                                  setBtechRoleBranchFilter('cse');
+                                  setToastMessage('Switched to CSE Architecture Flow Roadmap');
+                                  setTimeout(() => setToastMessage(null), 3000);
+                                }}
+                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                              >
+                                <Code2 className="h-2.5 w-2.5 text-emerald-600" />
+                                <span>💻 CSE</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCurrentStage('btech_1');
+                                  setBtechRoleBranchFilter('aiml');
+                                  setToastMessage('Switched to AI/ML Architecture Flow Roadmap');
+                                  setTimeout(() => setToastMessage(null), 3000);
+                                }}
+                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                              >
+                                <Target className="h-2.5 w-2.5 text-purple-600" />
+                                <span>🤖 AI/ML</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCurrentStage('btech_1');
+                                  setBtechRoleBranchFilter('ece');
+                                  setToastMessage('Switched to ECE Architecture Flow Roadmap');
+                                  setTimeout(() => setToastMessage(null), 3000);
+                                }}
+                                className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-800 font-bold text-[10px] hover:bg-slate-100 flex items-center space-x-1 transition-all"
+                              >
+                                <Cpu className="h-2.5 w-2.5 text-blue-600" />
+                                <span>📡 ECE</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Architecture */}
@@ -1096,7 +1153,7 @@ export default function UnifiedPlatformHome() {
                             <strong>Degrees:</strong> BCA (Bachelor of Computer Applications - 3 Years), B.Sc Computer Science, Data Analytics.
                           </p>
                           <p className="text-slate-600 text-[11px]">
-                            <strong>Path:</strong> BCA $\rightarrow$ MCA (via NIMCET / ICET) $\rightarrow$ Software Engineer in MNCs.
+                            <strong>Path:</strong> BCA → MCA (via NIMCET / ICET) → Software Engineer in MNCs.
                           </p>
                         </div>
                       </div>
@@ -1134,7 +1191,7 @@ export default function UnifiedPlatformHome() {
                             <strong>Colleges:</strong> AIIMS Mangalagiri, Andhra Medical College (AMC), RIMS Srikakulam, Private Medical Colleges.
                           </p>
                           <p className="text-slate-600 text-[11px]">
-                            <strong>Next Step:</strong> NEET-PG $\rightarrow$ MD / MS Super-speciality (Cardiology, Neurology, Surgery).
+                            <strong>Next Step:</strong> NEET-PG → MD / MS Super-speciality (Cardiology, Neurology, Surgery).
                           </p>
                         </div>
 
@@ -1237,7 +1294,7 @@ export default function UnifiedPlatformHome() {
                       <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                         <strong className="text-slate-900 block font-bold">1. Chartered Accountancy (CA)</strong>
                         <p className="text-slate-600 text-[11px]">
-                          <strong>Path:</strong> CA Foundation $\rightarrow$ Intermediate $\rightarrow$ 3-Yr Articleship $\rightarrow$ CA Final.
+                          <strong>Path:</strong> CA Foundation → Intermediate → 3-Yr Articleship → CA Final.
                         </p>
                         <p className="text-slate-600 text-[11px]">
                           <strong>Outcome:</strong> Statutory Auditor, Chief Financial Officer (CFO), Financial Consultant.
