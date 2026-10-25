@@ -23,6 +23,18 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
           950: '#020617',
+        },
+        stitch: {
+          primary: '#3525cd',
+          'primary-container': '#4f46e5',
+          secondary: '#00687a',
+          'secondary-container': '#06b6d4',
+          surface: '#f8f9ff',
+          'surface-low': '#eff4ff',
+          'surface-container': '#e5eeff',
+          'surface-high': '#dce9ff',
+          'on-surface': '#0b1c30',
+          'on-surface-variant': '#464555',
         }
       },
     },
