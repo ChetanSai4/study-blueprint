@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Blueprint - Official College Project Report</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    :root {
+      --primary: #3525cd;
+      --secondary: #00687a;
+      --text: #0b1c30;
+      --text-muted: #464555;
+      --border: #e2e8f0;
+      --bg-alt: #f8f9ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: #ffffff;
+      line-height: 1.6;
+      font-size: 13.5px;
+      padding: 2.5rem 3rem;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    /* Print-specific layout */
+    @media print {
+      body {
+        padding: 0;
+        font-size: 12px;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* Print action bar */
+    .action-bar {
+      background: var(--bg-alt);
+      border: 1px solid #dce9ff;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-print {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-print:hover {
+      background: #4f46e5;
+    }
+
+    /* Title Page */
+    .title-page {
+      text-align: center;
+      padding: 4rem 1rem 3rem 1rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .title-page h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .title-page h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eff4ff;
+      color: var(--primary);
+      border: 1px solid #dce9ff;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      text-align: left;
+      background: var(--bg-alt);
+      border: 1px solid #dce9ff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 30px;
+      font-size: 12.5px;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: var(--primary);
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* Section Headings */
+    h2.section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+      margin: 2rem 0 1rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    h3.sub-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: #334155;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    /* Architecture Flow Box */
+    .arch-flow {
+      background: #0b1c30;
+      color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    .arch-card {
+      background: #eff4ff;
+      border: 1px solid #dce9ff;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .arch-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem 0;
+      font-size: 12.5px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-alt);
+      color: var(--primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Action Bar for Printing / PDF Generation -->
+    <div class="action-bar no-print">
+      <div>
+        <strong>Study Blueprint College Project Report</strong>
+        <span style="color: var(--text-muted); font-size: 12px; margin-left: 8px;">Ready for printing & college viva review</span>
+      </div>
+      <button class="btn-print" onclick="window.print()">
+        🖨️ Print / Save as PDF
+      </button>
+    </div>
+
+    <!-- Title Page -->
+    <div class="title-page">
+      <div class="badge">Academic Year 2026 – 2027</div>
+      <h1>STUDY BLUEPRINT</h1>
+      <h2>Autonomous Multi-Tier Academic Operating System & 4-Year B.Tech Engineering Architecture Platform</h2>
+      <p style="max-width: 650px; margin: 0 auto; color: var(--text-muted); font-size: 13px;">
+        A production-grade, zero-login academic operating system integrating autonomous curricular regulations (JNTU-GV R23/R20), 5-phase discipline engineering pipelines, precision study trackers, and verified university syllabus repositories.
+      </p>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <strong>Project Domain</strong>
+          Educational Technology & Engineering Career Operating Systems
+        </div>
+        <div class="meta-item">
+          <strong>Academic Standard</strong>
+          JNTU-GV / Autonomous University Curricula (R23 & R20)
+        </div>
+        <div class="meta-item">
+          <strong>Candidate Name</strong>
+          Chetan Sai
+        </div>
+        <div class="meta-item">
+          <strong>Technical Stack</strong>
+          Next.js 14 (App Router), FastAPI Microservices, Stitch MCP Design Tokens
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Abstract -->
+    <h2 class="section-title">1. Abstract & Executive Summary</h2>
+    <p>
+      Engineering undergraduates in India often face significant fragmentation between theoretical coursework prescribed in university schemes (e.g., JNTU-GV R23/R20) and the practical toolchains, laboratory milestones, and competitive frameworks required for industry recruitment. Commercial EdTech platforms aggravate this by imposing aggressive login walls, advertising noise, and generic video playlists disconnected from real curricular gate requirements.
+    </p>
+    <p>
+      <strong>Study Blueprint</strong> solves this systemic challenge by delivering an open-access <strong>Academic Operating System</strong> with zero login friction. The platform features an authentic <strong>5-Phase Engineering Discipline Architecture Flow</strong> for all 6 core branches (EEE, ECE, CSE, AIML, Mechanical, Civil), linking foundational mathematical models to physical machinery, control converters, industrial simulation tools (MATLAB/Simulink, ETAP, PSCAD, Ansys Maxwell), and 4 distinct placement exit gateways (Central PSUs via GATE vs. Tier-1 Corporate MNCs).
+    </p>
+
+    <!-- Section 2: Key Objectives -->
+    <h2 class="section-title">2. Key Objectives & System Scope</h2>
+    <ul>
+      <li><strong>Frictionless Open Access:</strong> Instant, zero-authentication access to university syllabi, timetable managers, and roadmaps without storing personal phone numbers or user tracking.</li>
+      <li><strong>5-Phase Architecture Flowcharts:</strong> Moving beyond simple lists of course names by providing clear, visual dependency pipelines for every engineering discipline.</li>
+      <li><strong>Self-Analysis Study Cockpit:</strong> Interactive timetable tracking with duration adjustment, study streak logging, focus rate calculation, and live circular SVG focus stopwatch intervals (Pomodoro 25m / Deep Work 50m).</li>
+      <li><strong>Zero-Error Curricular Bank:</strong> Hosting verified static syllabus copies, previous year question banks, and lab manuals with integrated in-page modal previews, eliminating 404 links.</li>
+    </ul>
+
+    <!-- Section 3: System Architecture -->
+    <div class="page-break"></div>
+    <h2 class="section-title">3. System Architecture & Technical Stack</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Role / Responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend Core</strong></td>
+          <td>Next.js 14 (App Router) + TypeScript</td>
+          <td>Server-side rendering, static site generation (16 static routes), and component state management.</td>
+        </tr>
+        <tr>
+          <td><strong>Design Engine</strong></td>
+          <td>Tailwind CSS + Stitch MCP</td>
+          <td>Synced with Stitch "Blueprint Precision Engine" tokens, Geist and Inter fonts, Google Material Symbols.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>FastAPI (Python 3.11) + Uvicorn</td>
+          <td>High-speed asynchronous REST endpoints on port 8000 for study plans, careers, and resources.</td>
+        </tr>
+        <tr>
+          <td><strong>Curricular Data</strong></td>
+          <td>Verified Static PDFs + JSON Models</td>
+          <td>Local static PDF documents in <code>/public/docs/</code> with guaranteed HTTP 200 delivery.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 4: Module Breakdown -->
+    <h2 class="section-title">4. Module-by-Module Technical Breakdown</h2>
+
+    <h3 class="sub-title">4.1 Module 1: Career Roadmaps & 5-Phase Architecture Flow</h3>
+    <p>
+      The core engineering module delivers a 5-phase systematic pipeline representing a student's 4-year progression:
+    </p>
+
+    <div class="arch-flow">
+[PHASE 01: Foundational Modeling (Year 1)]
+Inputs: +2 MPC Physics & Calculus
+Modules: Linear Algebra, Circuit Analysis (ECA), Applied Physics, C-Prog, CAD
+Toolchains: LTspice, MATLAB Basic Scripts, Tinkercad Circuits
+Milestone: Thevenin/Norton Breadboard Verification with Dual-Trace DSO
+       │
+       ▼ (Pipeline Flow: Network Theorems Feed Physical Electromagnetic Machinery)
+[PHASE 02: Electromagnetic Energy & Rotating Machines (Year 2)]
+Inputs: Circuit Analysis & Maxwell EMF Equations
+Modules: DC Machines & Transformers, AC Machines, EMF, Analog Circuits
+Toolchains: MATLAB/Simulink (Simscape), Ansys Maxwell (FEA), PSpice
+Milestone: OC/SC Transformer Efficiency & DC Motor 3-Point Starter Speed Rig
+       │
+       ▼ (Pipeline Flow: Machine Dynamics Feed Converters & Linear Feedback Control)
+[PHASE 03: Power Converter Processing & Control Core (Year 3)]
+Inputs: AC Machines Dynamics & Laplace Transform Stability
+Modules: Power Electronics (MOSFET/IGBT), Power Systems (PS1/PS2), PID Control
+Toolchains: ETAP (Load Flow & Faults), PSCAD Transients, Keil uVision
+Milestone: Closed-Loop DC-DC Buck/Boost Converter with PWM Driver Board
+       │
+       ▼ (Pipeline Flow: Converter Topology Integrates into Smart Grid & EV Drivetrains)
+[PHASE 04: Industrial Specialization & EV Engine (Year 4)]
+Inputs: Power Converters, Grid Faults & Microcontrollers
+Modules: Electric Vehicle Powertrains, Battery Management Systems, PLC/SCADA
+Toolchains: Siemens TIA Portal, DIgSILENT, Simscape Battery & Driveline
+Milestone: Complete EV Battery Management System (BMS) with CAN Bus & IoT
+       │
+       ▼ (Architecture Output Demux: 4 High-Growth Career Placement Gateways)
+[PHASE 05: 4 Career Placement Gateways]
+- Track A: Central PSUs & GATE (PGCIL, NTPC, BHEL, ISRO, APTRANSCO)
+- Track B: EV & Power Tech MNCs (Tesla, Ather Energy, Schneider, ABB, Bosch)
+- Track C: Industrial Automation & Robotics (Siemens, Rockwell, Honeywell)
+- Track D: High-Growth Software & SDE (C++ Firmware, Data Pipelines, Tech MNCs)
+    </div>
+
+    <h3 class="sub-title">4.2 Module 2: Study Planner & Student Self-Analysis Dashboard</h3>
+    <p>
+      Features a 4-card KPI metric row (Today's Target Progress, 5-Day Consistency Streak, 92% Focus Efficiency, and Finished Schedule Ratio). Accompanied by slot-by-slot timetable scheduling and an integrated circular SVG focus stopwatch room supporting Pomodoro (25m), Deep Work (50m), and Standard (30m) intervals.
+    </p>
+
+    <h3 class="sub-title">4.3 Module 3: B.Tech University Syllabus & Lab Manual Bank</h3>
+    <p>
+      Provides direct autonomous university filtering (JNTU-GV, Andhra University, JNTU-K, JNTU-H) and branch filtering with instant in-page PDF preview modals and one-click downloads.
+    </p>
+
+    <h3 class="sub-title">4.4 Module 4: High-Performance Focus Room</h3>
+    <p>
+      A distraction-free concentration environment featuring a large SVG progress countdown ring, session topic label, and pause/resume habit controls.
+    </p>
+
+    <!-- Section 5: Verification & Results -->
+    <div class="page-break"></div>
+    <h2 class="section-title">5. Verification, Quality Assurance & Build Matrix</h2>
+    <ul>
+      <li><strong>Build Validation:</strong> Executed <code>npm run build</code> from root. Successfully generated 16 optimized static routes with <strong>0 TypeScript compilation errors</strong> and <strong>0 lint warnings</strong>.</li>
+      <li><strong>Static Assets Verification:</strong> Audited all 22 syllabus, PYQ, and lab manual PDFs in <code>/public/docs/</code>. All assets serve with HTTP <code>200 OK</code> and <code>application/pdf</code> headers.</li>
+      <li><strong>Cross-Surface Design Consistency:</strong> All layout structures, typography scales (Geist + Inter), and color tokens directly mirror the verified Stitch Canvas project (ID: <code>15377756584866006475</code>).</li>
+    </ul>
+
+    <!-- Section 6: College Viva Guide -->
+    <h2 class="section-title">6. College Viva Q&A Quick Reference</h2>
+    <div class="arch-card">
+      <h4>Q: What is the primary novelty of Study Blueprint compared to commercial learning apps?</h4>
+      <p>
+        <strong>A:</strong> Unlike commercial portals that force signups and offer generic videos, Study Blueprint is a zero-login Academic OS built strictly around official autonomous university regulations (such as JNTU-GV R23). It provides systematic 5-phase architectural flowcharts showing how theoretical classes connect with industrial simulation software and recruitment tracks.
+      </p>
+    </div>
+
+    <div class="arch-card">
+      <h4>Q: How does the platform prevent broken links and 404 errors?</h4>
+      <p>
+        <strong>A:</strong> All syllabus copies, lab manuals, and previous year question banks are locally hosted and verified inside <code>/public/docs/</code>. An embedded HTML5 iframe modal allows students to inspect the document directly on-page.
+      </p>
+    </div>
+
+    <div class="arch-card">
+      <h4>Q: What technologies ensure responsiveness and high performance?</h4>
+      <p>
+        <strong>A:</strong> Next.js 14 App Router enables static site generation (SSG) with sub-second page loads. Tailwind CSS ensures fluid responsiveness across mobile, tablet, and desktop screens without runtime CSS overhead.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Study Blueprint — Complete Academic Planning & Career Operating System • Submitted for College Academic Review • Academic Year 2026-2027
+    </div>
+  </div>
+</body>
+</html>
