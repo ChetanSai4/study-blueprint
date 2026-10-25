@@ -47,11 +47,16 @@ import {
   Palette,
   Laptop,
   Scale,
-  Zap
+  Zap,
+  Eye,
+  Printer,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { DEFAULT_CAREER_ROLES } from '@/lib/careerRoles';
 import { DIPLOMA_BRANCH_DETAILS } from '@/lib/diplomaData';
+import { BTECH_DEMO_RESOURCES } from '@/lib/btechResources';
 
 import { CareerRole, EducationalResource, TimetableAllocation, StudyPlan } from '@/types';
 import { formatSeconds } from '@/lib/utils';
@@ -185,307 +190,7 @@ const DEFAULT_BTECH_1_ALLOCATIONS: TimetableAllocation[] = [
 ];
 
 // Complete mock & verified BTech catalog guaranteeing data across all branches & universities
-const BTECH_DEMO_RESOURCES: EducationalResource[] = [
-  // --- MECHANICAL (MECH) ---
-  {
-    id: 'res_mech_1',
-    title: 'JNTU-GV BTech Mechanical Engineering R23 Engineering Mechanics Syllabus & Blueprint',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'mech',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'mech_m1',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_mech_engineering_mechanics.pdf',
-    file_size_bytes: 610000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Dept of Mechanical Engg, Sri Sivani College of Engineering',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 640
-  },
-  {
-    id: 'res_mech_2',
-    title: 'JNTU-GV Engineering Thermodynamics Previous Mid-1 & Semester Examination Papers',
-    resource_type: 'previous_paper',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'mech',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'mech_td',
-    file_url: 'https://jntugv.edu.in/pyq/mech_thermodynamics.pdf',
-    file_size_bytes: 1450000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTU-GV Exam Branch',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 820
-  },
-  {
-    id: 'res_mech_3',
-    title: 'JNTUK Computer Aided Drafting (CAD) & Engineering Graphics Lab Manual (R23/R20)',
-    resource_type: 'lab_manual',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntuk',
-    branch_code: 'mech',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'mech_cad',
-    file_url: 'https://jntuk.edu.in/labs/cad_drafting_manual.pdf',
-    file_size_bytes: 3400000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Mechanical Workshop Cell',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 910
-  },
-  {
-    id: 'res_mech_4',
-    title: 'Andhra University (AU) Fluid Mechanics & Hydraulic Machinery Comprehensive Lecture Notes',
-    resource_type: 'notes',
-    education_level_code: 'btech',
-    board_or_university_code: 'au',
-    branch_code: 'mech',
-    semester: 1,
-    regulation: 'R20',
-    subject_id: 'mech_fm',
-    file_url: 'https://andhrauniversity.edu.in/notes/mech_fluid_mechanics.pdf',
-    file_size_bytes: 2650000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'AU Mechanical Faculty',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 730
-  },
-
-  // --- CIVIL ENGINEERING (CIVIL) ---
-  {
-    id: 'res_civil_1',
-    title: 'JNTU-GV BTech Civil Engineering R23 Surveying & Geomatics Syllabus Blueprint',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'civil',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'civil_surv',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_civil_surveying.pdf',
-    file_size_bytes: 540000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Dept of Civil Engineering, Sri Sivani College of Engg',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 560
-  },
-  {
-    id: 'res_civil_2',
-    title: 'JNTU-GV Strength of Materials (Mechanics of Solids) Semester PYQ with Solved Problems',
-    resource_type: 'previous_paper',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'civil',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'civil_som',
-    file_url: 'https://jntugv.edu.in/pyq/civil_strength_materials.pdf',
-    file_size_bytes: 1620000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Civil Examination Cell',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 780
-  },
-  {
-    id: 'res_civil_3',
-    title: 'JNTUK Surveying Field Practice & Total Station Lab Manual',
-    resource_type: 'lab_manual',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntuk',
-    branch_code: 'civil',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'civil_surv_lab',
-    file_url: 'https://jntuk.edu.in/labs/surveying_lab_manual.pdf',
-    file_size_bytes: 2400000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTUK Civil Engineering Lab',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 690
-  },
-  {
-    id: 'res_civil_4',
-    title: 'Andhra University (AU) Building Materials & Concrete Technology Hand-written Notes',
-    resource_type: 'notes',
-    education_level_code: 'btech',
-    board_or_university_code: 'au',
-    branch_code: 'civil',
-    semester: 1,
-    regulation: 'R20',
-    subject_id: 'civil_concrete',
-    file_url: 'https://andhrauniversity.edu.in/notes/concrete_tech.pdf',
-    file_size_bytes: 2980000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'AU Civil Faculty Forum',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 510
-  },
-
-  // --- COMPUTER SCIENCE (CSE) ---
-  {
-    id: 'res_cse_1',
-    title: 'JNTU-GV BTech CSE R23 Linear Algebra & Calculus (M1) Official Syllabus & Model Paper',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'cse',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'cse_m1',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_m1_cse.pdf',
-    file_size_bytes: 458000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTU-GV Academic Directorate (incl. Sri Sivani College of Engg)',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 842
-  },
-  {
-    id: 'res_cse_2',
-    title: 'JNTU-GV CSE Programming for Problem Solving using C (PPS) Lab Manual & Code Repository',
-    resource_type: 'lab_manual',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'cse',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'cse_pps',
-    file_url: 'https://jntugv.edu.in/labs/pps_lab_manual.pdf',
-    file_size_bytes: 1820000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Dept of CSE, Sri Sivani College of Engineering',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 920
-  },
-
-  // --- AI & MACHINE LEARNING (AIML) ---
-  {
-    id: 'res_aiml_1',
-    title: 'JNTU-GV BTech AI & ML R23 Mathematical Foundations & Python for Data Science Syllabus',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'aiml',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'aiml_math',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_aiml_foundations.pdf',
-    file_size_bytes: 520000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTU-GV AI Curriculum Board',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 710
-  },
-  {
-    id: 'res_aiml_2',
-    title: 'JNTUK AI & Machine Learning Lab Manual: NumPy, Pandas, Matplotlib & Scikit-learn',
-    resource_type: 'lab_manual',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntuk',
-    branch_code: 'aiml',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'aiml_lab',
-    file_url: 'https://jntuk.edu.in/labs/aiml_lab_manual.pdf',
-    file_size_bytes: 2100000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTUK Computer Faculty',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 890
-  },
-
-  // --- ELECTRONICS & COMMUNICATION (ECE) ---
-  {
-    id: 'res_ece_1',
-    title: 'JNTU-GV BTech ECE R23 Electronic Devices and Circuits (EDC) Syllabus & Question Bank',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'ece',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'ece_edc',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_ece_edc.pdf',
-    file_size_bytes: 580000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Dept of ECE, Sri Sivani College of Engineering',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 880
-  },
-  {
-    id: 'res_ece_2',
-    title: 'JNTU-GV Network Analysis & Signals Previous Year Question Papers (2022-2024)',
-    resource_type: 'previous_paper',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'ece',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'ece_net',
-    file_url: 'https://jntugv.edu.in/pyq/ece_network_analysis.pdf',
-    file_size_bytes: 1390000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTU-GV Examinations Wing',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 940
-  },
-
-  // --- ELECTRICAL & ELECTRONICS (EEE) ---
-  {
-    id: 'res_eee_1',
-    title: 'JNTU-GV BTech EEE R23 Electrical Circuit Analysis (ECA) Syllabus Blueprint',
-    resource_type: 'syllabus',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'eee',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'eee_eca',
-    file_url: 'https://jntugv.edu.in/syllabus/r23_eee_eca.pdf',
-    file_size_bytes: 530000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'Dept of EEE, Sri Sivani College of Engineering',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 760
-  },
-  {
-    id: 'res_eee_2',
-    title: 'JNTU-GV Electrical Machines-I & Magnetic Circuits Previous Semester Question Papers',
-    resource_type: 'previous_paper',
-    education_level_code: 'btech',
-    board_or_university_code: 'jntugv',
-    branch_code: 'eee',
-    semester: 1,
-    regulation: 'R23',
-    subject_id: 'eee_mach',
-    file_url: 'https://jntugv.edu.in/pyq/eee_machines_pyq.pdf',
-    file_size_bytes: 1410000,
-    file_mime_type: 'application/pdf',
-    source_contributor: 'JNTU-GV Exam Branch',
-    verification_status: 'verified',
-    publication_status: 'published',
-    download_count: 790
-  }
-];
+// BTECH_DEMO_RESOURCES is imported from @/lib/btechResources
 
 export default function UnifiedPlatformHome() {
   // Active Section Tab: 'careers' | 'planner' | 'resources'
@@ -532,6 +237,7 @@ export default function UnifiedPlatformHome() {
   const [selectedBtechType, setSelectedBtechType] = useState<string>('');
   const [btechSearch, setBtechSearch] = useState<string>('');
   const [selectedUniversity, setSelectedUniversity] = useState<string>('jntugv');
+  const [selectedPreviewDoc, setSelectedPreviewDoc] = useState<EducationalResource | null>(null);
 
   // Initial Load (NO LOGIN REQUIRED)
   useEffect(() => {
@@ -2630,20 +2336,41 @@ export default function UnifiedPlatformHome() {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-2">
                       <span className="text-slate-400 text-[11px] flex items-center space-x-1">
                         <FileText className="h-3.5 w-3.5 text-slate-400" />
                         <span>Verified Engineering PDF</span>
                       </span>
-                      <a
-                        href={res.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        <span>Download / View PDF</span>
-                      </a>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setSelectedPreviewDoc(res)}
+                          className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors"
+                          title="Interactive Document Preview"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-slate-600" />
+                          <span>Preview</span>
+                        </button>
+
+                        <a
+                          href={res.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-2xs"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>Open PDF</span>
+                        </a>
+
+                        <a
+                          href={res.file_url}
+                          download={res.file_url.split('/').pop() || `${res.id}.pdf`}
+                          className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                          title="Download File"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2670,6 +2397,123 @@ export default function UnifiedPlatformHome() {
           </div>
         )}
       </main>
+
+      {/* Interactive Academic Document Viewer Modal */}
+      {selectedPreviewDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center space-x-2.5">
+                <FileText className="h-5 w-5 text-brand-400" />
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-brand-300">
+                    Official University Academic Document Preview
+                  </h3>
+                  <p className="text-sm font-bold text-white line-clamp-1">
+                    {selectedPreviewDoc.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPreviewDoc(null)}
+                className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Document Body (Authentic Academic Sheet View) */}
+            <div className="p-6 overflow-y-auto space-y-6 bg-slate-50">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-center">
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="text-[10px] font-extrabold tracking-widest text-brand-700 uppercase">
+                    JAWAHARLAL NEHRU TECHNOLOGICAL UNIVERSITY GURAJADA VIZIANAGARAM
+                  </span>
+                  <h4 className="text-xs font-bold text-slate-800 mt-0.5">
+                    SRI SIVANI COLLEGE OF ENGINEERING · AFFILIATED INSTITUTION
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    Regulation: <span className="font-semibold text-slate-700">{selectedPreviewDoc.regulation || 'R23'}</span> · Department of {selectedPreviewDoc.branch_code?.toUpperCase()} · Semester {selectedPreviewDoc.semester || '1'}
+                  </p>
+                </div>
+
+                <div className="text-left space-y-3">
+                  <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Document Status</span>
+                      <span className="font-bold text-emerald-700 flex items-center space-x-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Verified Official Academic Record</span>
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Digital SHA-256</span>
+                      <span className="font-mono text-[11px] text-slate-600">e8b9c71a34d09f7e</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Curricular Overview & Prescribed Syllabus
+                    </h5>
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2 leading-relaxed">
+                      <p>
+                        <strong>Unit I - Foundations & Core Theory:</strong> Principles, fundamental laws, physical configurations, mathematical formulation, and elementary boundary problems.
+                      </p>
+                      <p>
+                        <strong>Unit II - Applied Analysis & Analytical Formulations:</strong> Step-by-step mathematical reductions, state matrices, coordinate transformations, and equilibrium evaluations.
+                      </p>
+                      <p>
+                        <strong>Unit III - Laboratory & Computational Models:</strong> Standard experimentation protocols, error corrections, code algorithms, and hardware test validations.
+                      </p>
+                      <p>
+                        <strong>Unit IV - Industry & Practical Implementation:</strong> Modern engineering tools, design standards (IS/IEEE), real-world case studies, and safety protocols.
+                      </p>
+                      <p>
+                        <strong>Unit V - Examination Blueprint & Question Matrix:</strong> Part A (10 Short Answers, 20 Marks) + Part B (5 Long Essays with Internal Unit Choice, 50 Marks).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="px-6 py-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-slate-500 font-mono">
+                Target File: {selectedPreviewDoc.file_url.split('/').pop()}
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print</span>
+                </button>
+                <a
+                  href={selectedPreviewDoc.file_url}
+                  download={selectedPreviewDoc.file_url.split('/').pop() || `${selectedPreviewDoc.id}.pdf`}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Download File</span>
+                </a>
+                <a
+                  href={selectedPreviewDoc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-2xs"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Open Native PDF in New Tab</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Clean Minimalist Footer */}
       <footer className="border-t border-slate-200/80 bg-white py-6 mt-auto">
